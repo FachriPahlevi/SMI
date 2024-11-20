@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FormApplication;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
-class FormApplicationController extends Controller
+class IndexController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,8 @@ class FormApplicationController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('Index');
+     
     }
 
     /**
@@ -41,10 +42,10 @@ class FormApplicationController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\FormApplication  $formApplication
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(FormApplication $formApplication)
+    public function show($id)
     {
         //
     }
@@ -52,10 +53,10 @@ class FormApplicationController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\FormApplication  $formApplication
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(FormApplication $formApplication)
+    public function edit($id)
     {
         //
     }
@@ -64,10 +65,10 @@ class FormApplicationController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\FormApplication  $formApplication
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, FormApplication $formApplication)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -75,10 +76,10 @@ class FormApplicationController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\FormApplication  $formApplication
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(FormApplication $formApplication)
+    public function destroy($id)
     {
         //
     }

@@ -31,16 +31,17 @@ export default function Index (){
       
           {/* Hero Section */}
             <div 
-            className="relative h-[500px] bg-cover bg-center" 
-            style={{ backgroundImage: "url('/img/banner_home.png')" }}
-
+            className="relative h-[500px] bg-cover bg-center z-0" 
+            style={{ backgroundImage: "url('/img/banner_home.jpg')" }}
             >
             <div className="absolute inset-0 bg-black opacity-40"></div>
-            <div className="relative container mx-auto px-4 h-full flex items-center">
+            <div className="relative container mx-auto px-4 h-full flex items-center justify-center">
+                <div className="text-center text-white z-10">
+                <h1 className="text-4xl md:text-7xl font-bold mb-5">PT. Sinergi Mitra Investama</h1>
+                <h1 className="text-xl md:text-2xl font-semibold">Ruang Informasi Standard Operating Procedure (SOP)</h1>
+                </div>
             </div>
             </div>
-
-
             {/* Vision & Mission Section */}
             <section className="py-24 bg-white">
                 <div className="container mx-auto px-24">

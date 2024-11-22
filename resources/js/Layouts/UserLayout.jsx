@@ -1,27 +1,40 @@
 import React from 'react';
 import Sidebar from '../Components/Sidebar';
+import Navbar from '../Components/Navbar';
 import { Helmet } from 'react-helmet';
-import { usePage } from '@inertiajs/react'
+import { usePage } from '@inertiajs/react';
 
 const UserLayout = ({ children }) => {
-    const { auth } = usePage().props;
-    return (
-        <div className="flex flex-col sm:flex-row min-h-screen w-full">
-            <Helmet>
-                <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-            </Helmet>
+  const { auth } = usePage().props;
 
-            {/* Sidebar Responsive */}
-            <aside className="w-full sm:w-64 fixed sm:relative bg-gray-100 sm:bg-transparent">
-                <Sidebar auth={auth} />
-            </aside>
+  return (
+    <div className="min-h-screen w-full flex flex-col">
+      <Helmet>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </Helmet>
 
-            {/* Main Content */}
-            <main className="flex flex-1 flex-col items-center sm:items-start min-h-screen justify-center sm:justify-start p-4 sm:p-8 mt-16 sm:mt-0">
-                {children}
-            </main>
-        </div>
-    );
+      {/* Navbar */}
+      <header className="w-full bg-gray-100 shadow-md fixed top-0 z-10">
+        <Navbar auth={auth} />
+      </header>
+
+      {/* Layout Wrapper */}
+      <div className="flex flex-1 mt-16">
+        {/* Sidebar */}
+        <aside className="hidden sm:block w-64 bg-gray-100 border-r min-h-screen">
+          <Sidebar auth={auth} />
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 sm:p-8 bg-gray-50">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default UserLayout;

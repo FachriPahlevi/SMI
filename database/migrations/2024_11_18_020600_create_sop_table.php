@@ -13,10 +13,12 @@ return new class extends Migration
      */
     public function up()
 {
-    Schema::create('forms', function (Blueprint $table) {
+    Schema::create('sop', function (Blueprint $table) {
         $table->id();
         $table->foreignId('id_division')->constrained('divisions')->onDelete('cascade');
-        $table->enum('status', ['accept', 'waiting', 'rejected'])->default('waiting');
+        $table->string('title');
+        $table->string('Description');
+        $table->enum('status', ['disetujui', 'menunggu', 'ditolak'])->default('menunggu');
         $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
         $table->timestamps();
     });
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('forms');
+        Schema::dropIfExists('sop');
     }
 };

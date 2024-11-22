@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SOPController;
+use App\Http\Controllers\DivisionController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,10 +22,17 @@ use App\Http\Controllers\FormController;
 */
 
 Route::get('/', [IndexController::class, 'index'])->name('index');
-Route::get('/superadmin', [IndexController::class, 'index'])->name('index');
+Route::get('/manajemen-user', [UserController::class, 'index'])->name('user');
+Route::get('/daftar-divisi', [DivisionController::class, 'index'])->name('divisi');
+Route::get('/daftar-sop/{id}', [SOPController::class, 'index'])->name('sop');
+Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
+Route::get('/cek-sop/{id}', [SOPController::class, 'show'])->name('sop.show');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
+
+
+Route::get('/panduan', function () {
+    return Inertia::render('Panduan');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

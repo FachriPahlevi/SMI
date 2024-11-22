@@ -13,10 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('positions', function (Blueprint $table) {
+        Schema::create('files_extended', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_division')->constrained('divisions')->onDelete('cascade');
             $table->string('name');
+            $table->string('file_path');
+            $table->foreignId('id_sop')->constrained('sop')->onDelete('cascade');
+            $table->enum('category', ["flowchart", "sop", "lainnya" ]);
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('positions');
+        Schema::dropIfExists('files_extended');
     }
 };

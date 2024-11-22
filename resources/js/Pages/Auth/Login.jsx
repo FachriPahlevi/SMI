@@ -45,7 +45,7 @@ export default function Login({ status, canResetPassword }) {
                         type="nik"
                         name="nik"
                         value={data.nik}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full h-12"
                         autoComplete="username"
                         isFocused={true}
                         onChange={handleOnChange}
@@ -62,7 +62,7 @@ export default function Login({ status, canResetPassword }) {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full h-12"
                         autoComplete="current-password"
                         onChange={handleOnChange}
                     />

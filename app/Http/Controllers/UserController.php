@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Division;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-class DivisionController extends Controller
+use App\Models\User;
+use App\Models\Position;
+class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,9 +15,9 @@ class DivisionController extends Controller
      */
     public function index()
     {
-        $division = Division::all();
-        return Inertia::render('Division', [
-            "division" => $division,
+        $user = User::with('Position', 'position.division')->get();
+        return Inertia::render('User', [
+            'user' => $user
         ]);
     }
 
@@ -44,10 +45,10 @@ class DivisionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Division  $division
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Division $division)
+    public function show($id)
     {
         //
     }
@@ -55,10 +56,10 @@ class DivisionController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Division  $division
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Division $division)
+    public function edit($id)
     {
         //
     }
@@ -67,10 +68,10 @@ class DivisionController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Division  $division
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Division $division)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -78,10 +79,10 @@ class DivisionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Division  $division
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Division $division)
+    public function destroy($id)
     {
         //
     }

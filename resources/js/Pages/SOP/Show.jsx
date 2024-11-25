@@ -1,135 +1,155 @@
 import React, { useState } from 'react';
-import { useForm } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 
-export default function Form({sop}) {
+export default function Form({ sop = [], division = [] }) {
+  console.log(sop);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const divisionOptions = [
-    { id: 'it', label: 'IT' },
-    { id: 'hr', label: 'Human Resources' },
-    { id: 'finance', label: 'Finance' },
-    { id: 'marketing', label: 'Marketing' },
-    { id: 'operations', label: 'Operations' }
-  ];
+  // Open modal and set the image
+  const openModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsOpen(true);
+  };
 
-  console.log({sop});
+  // Close modal
+  const closeModal = () => setIsOpen(false);
+
   return (
     <UserLayout>
-    <div className="mx-auto p-6 w-full">
-      <div className="bg-white p-6 rounded shadow-lg">
-        <h1 className="text-2xl font-semibold mb-4">Form Pengajuan SOP</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-            <label htmlFor="title" className="block mb-2 font-medium text-gray-700">
-                Judul
-            </label>
-            <input
-                id="title"
-                type="text"
-                value={sop?.title || ''}
-                onChange={(e) => setData('title', e.target.value)}
-                placeholder={sop[0].value}
-                disabled
-                className="w-full border rounded p-2 bg-gray-100 text-gray-700 cursor-not-allowed"
-            />
-            {errors?.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-            )}
-        </div>
+      <div className="mx-auto p-6 w-full">
+        <p className="text-gray-400">Divisi / SOP / Show</p>
+        <div className="bg-white p-6 rounded shadow-lg">
+          <h1 className="text-2xl font-semibold mb-4">Detail SOP</h1>
+          <div className="space-y-6">
+            {/* Menampilkan Data SOP */}
+            {sop.length > 0 ? (
+              sop.map((item) => (
+                <div key={item.id} className="space-y-4 border-b pb-4 mb-4">
+                  {/* Judul SOP */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Judul</label>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.title || 'Tidak ada judul'}</p>
+                  </div>
 
+                  {/* Division */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Division</label>
+                    {item.division?.map((division, index) => (
+                      <p key={index} className="text-gray-700 border rounded p-2 bg-gray-100">
+                        {division.name || 'Tidak ada nama divisi'}
+                      </p>
+                    ))}
+                  </div>
 
-          <div>
-            <label className="block mb-2">Deskripsi</label>
-            <textarea
-              className="w-full border rounded p-2"
-              value={data.description}
-              onChange={(e) => setData('description', e.target.value)}
-              placeholder="Masukkan Deskripsi Dokumen"
-              required
-            />
-            {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-          </div>
-          <div className='grid grid-cols-2 gap-5'>
-            <div>
-              <label className="block mb-2">Upload Flowchart</label>
-              <input
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={(e) => handleFileChange(e, 'flowchart_file')}
-                required
-                className="w-full border rounded p-2"
-              />
-              {errors.flowchart_file && <p className="text-red-500 text-sm">{errors.flowchart_file}</p>}
-            </div>
+                  {/* Deskripsi SOP */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Deskripsi</label>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.Description || 'Tidak ada deskripsi'}</p>
+                  </div>
 
-            <div>
-              <label className="block mb-2">Upload SOP</label>
-              <input
-                type="file"
-                accept=".pdf,.docx,.doc"
-                onChange={(e) => handleFileChange(e, 'sop_file')}
-                required
-                className="w-full border rounded p-2"
-              />
-              {errors.sop_file && <p className="text-red-500 text-sm">{errors.sop_file}</p>}
-            </div>
-          </div>
-          <div>
-            <label className="block mb-2">Tambah File Pendukung (Opsional)</label>
-            {supportingFileInputs.map((input, index) => (
-              <div key={input.id} className="mb-4 grid grid-cols-2 gap-5">
-                <input
-                  type="text"
-                  value={input.category}
-                  onChange={(e) => handleSupportingCategoryChange(e, index)}
-                  placeholder="Masukkan Kategori"
-                  className="w-full border rounded p-2 mt-2"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => handleSupportingFileChange(e, index)}
-                  className="w-full border rounded p-2"
-                />
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={handleAddSupportingFileInput}
-              className="text-blue-600 underline"
-            >
-              Tambah File Pendukung
-            </button>
-          </div>
+                  {/* File SOP */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">File SOP</label>
+                    <div className="mb-2">
+                      <a
+                        href={`/storage/sop/${item.sop?.split('/').pop()}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
+                        {item.sop ? 'Lihat File PDF' : 'File tidak tersedia'}
+                      </a>
+                    </div>
+                  </div>
 
-          <div>
-            <label className="block mb-2">Pilih Divisi</label>
-            <div className="grid grid-cols-2 gap-4">
-              {divisionOptions.map((division) => (
-                <div key={division.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={division.id}
-                    checked={data.divisions.includes(division.id)}
-                    onChange={() => handleDivisionChange(division.id)}
-                    className="form-checkbox"
-                  />
-                  <label htmlFor={division.id} className="text-sm">{division.label}</label>
+                  {/* File Flowchart */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">File Flowchart</label>
+                    <div className="mb-2">
+                      {item.flowchart ? (
+                        <>
+                          {/* Thumbnail */}
+                          <img
+                            src={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
+                            alt={`Flowchart ${item.title}`}
+                            className="border rounded cursor-pointer"
+                            style={{ width: '150px', height: 'auto' }}
+                            onClick={() => openModal(`/storage/flowchart/${item.flowchart?.split('/').pop()}`)}
+                          />
+
+                          {/* Download Link */}
+                          <div className="mt-2">
+                            <a
+                              href={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
+                              download
+                              className="text-blue-500 underline"
+                            >
+                              Unduh Flowchart
+                            </a>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-gray-700">Flowchart tidak tersedia</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status SOP */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Status</label>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.status || 'Tidak ada status'}</p>
+                  </div>
+
+                  {/* Dibuat Pada */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Dibuat Pada</label>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
+                    </p>
+                  </div>
+
+                  {/* Diperbarui Tanggal */}
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">Diperbarui Tanggal</label>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">
+                      {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-            {errors.divisions && <p className="text-red-500 text-sm">{errors.divisions}</p>}
-          </div>
+              ))
+            ) : (
+              <p className="text-gray-700">Tidak ada data SOP yang tersedia.</p>
+            )}
 
-          <button
-            type="submit"
-            disabled={processing}
-            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {processing ? 'Mengirim...' : 'Kirim Dokumen'}
-          </button>
-        </form>
+            {/* Divisi */}
+            <div>
+              <label className="block mb-2 font-medium text-gray-700">Divisi Terkait</label>
+              <div className="grid grid-cols-2 gap-4">
+                {division.length > 0 ? (
+                  division.map((div) => (
+                    <p key={div.id} className="text-gray-700 border rounded p-2 bg-gray-100">
+                      {div.name || 'Tidak ada nama divisi'}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-700">Tidak ada divisi terkait</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Modal untuk menampilkan gambar yang diperbesar */}
+      {isOpen && (
+        <div className="modal-open fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-4 rounded shadow-lg">
+            <button onClick={closeModal} className="absolute top-0 right-0 text-gray-500">X</button>
+            <img src={selectedImage} alt="Selected" className="max-w-full max-h-full" />
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 }

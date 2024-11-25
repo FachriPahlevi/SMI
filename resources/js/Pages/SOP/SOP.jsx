@@ -3,7 +3,6 @@ import UserLayout from '@/Layouts/UserLayout';
 import { FaFolder } from "react-icons/fa";
 
 export default function SOP({ sop }) {
-    console.log(sop);
   return (
     <UserLayout>
       <div className="p-4">
@@ -27,6 +26,11 @@ export default function SOP({ sop }) {
               placeholder="Search"
               className="border rounded px-2 py-1"
             />
+              <button
+                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600 p-2"
+                onClick={() => window.location.href = '/tambah-sop'}>
+              + Tambah    
+              </button>
           </div>
         </div>
 

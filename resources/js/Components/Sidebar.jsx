@@ -46,15 +46,6 @@ export default function Sidebar({ auth }) {
           <FaFileAlt className="mr-2" />
           Daftar SOP
         </li>
-        <li
-          className={`menu-item px-4 py-2 flex items-center cursor-pointer ${
-            selectedKey === '/daftar-flowchart' ? 'bg-gray-700' : ''
-          }`}
-          onClick={() => navigate('/daftar-flowchart')} // Gunakan navigate untuk berpindah
-        >
-          <FaSitemap className="mr-2" />
-          Daftar Flowchart
-        </li>
       </ul>
     </div>
   );

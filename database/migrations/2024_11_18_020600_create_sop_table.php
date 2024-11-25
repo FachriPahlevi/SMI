@@ -18,8 +18,11 @@ return new class extends Migration
         $table->foreignId('id_division')->constrained('divisions')->onDelete('cascade');
         $table->string('title');
         $table->string('Description');
+        $table->string('sop')->nullable();
+        $table->string('flowchart')->nullable();
         $table->enum('status', ['disetujui', 'menunggu', 'ditolak'])->default('menunggu');
-        $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+        $table->json('related_division')->nullable();
+        $table->foreignId('created_by')->constrained('users')->onDelete('restrict');
         $table->timestamps();
     });
 }

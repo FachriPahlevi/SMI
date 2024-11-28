@@ -1,8 +1,23 @@
-import React from 'react';
-import UserLayout from '@/Layouts/UserLayout';
-import { FaFolder } from "react-icons/fa";
+import React, { useState } from "react";
+import UserLayout from "@/Layouts/UserLayout";
+import { FaFolder, FaEllipsisV } from "react-icons/fa";
 
 export default function SOP({ sop }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
+  // Filter data SOP berdasarkan pencarian dan status
+  const filteredSop = sop.filter((item) => {
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "" || item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const toggleDropdown = (id) => {
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
   return (
     <UserLayout>
       <div className="p-4">
@@ -11,31 +26,43 @@ export default function SOP({ sop }) {
           <h2 className="text-2xl font-bold">Daftar SOP</h2>
         </div>
 
-        {/* Filter Section */}  
-        <div className="flex items-center justify-between text-gray-400  mb-4">
-            <p>Daftar Divisi / Daftar SOP</p>
+        {/* Filter Section */}
+        <div className="flex items-center justify-between text-gray-400 mb-4">
+          <p>Daftar Divisi / Daftar SOP</p>
           <div className="flex gap-4">
-            <select className="border rounded py-1">
-              <option value="">Semua  Status</option>
-              <option value="enabled">Disetujui</option>
-              <option value="disabled">Ditolak</option>
-              <option value="disabled">Menunggu</option>
+            {/* Filter Status */}
+            <select
+              className="border rounded py-1"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Semua Status</option>
+              <option value="disetujui">Disetujui</option>
+              <option value="ditolak">Ditolak</option>
+              <option value="menunggu">Menunggu</option>
             </select>
+
+            {/* Search Input */}
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Cari SOP"
               className="border rounded px-2 py-1"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-              <button
-                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600 p-2"
-                onClick={() => window.location.href = '/tambah-sop'}>
-              + Tambah    
-              </button>
+
+            {/* Tambah SOP Button */}
+            <button
+              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+              onClick={() => (window.location.href = "/tambah-sop")}
+            >
+              + Tambah
+            </button>
           </div>
         </div>
 
         {/* Table Section */}
-        <div className="overflow-x-auto">
+        <div className="p-6">
           <table className="min-w-full bg-white border">
             <thead>
               <tr className="bg-gray-200 text-left">
@@ -43,60 +70,71 @@ export default function SOP({ sop }) {
                 <th className="p-2 border">Dibuat Oleh</th>
                 <th className="p-2 border">Status</th>
                 <th className="p-2 border">Terakhir Diubah</th>
-                <th className="p-2 border">Ukuran File</th>
                 <th className="p-2 border">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {sop.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-100">
-                  <td className="p-2 border text-left">
-                    <div className="flex items-center gap-3">
+              {filteredSop.length > 0 ? (
+                filteredSop.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-100">
+                    <td className="p-2 border text-left">
+                      <div className="flex items-center gap-3">
                         <FaFolder className="text-yellow-500" />
                         {item.title}
-                    </div>
+                      </div>
                     </td>
+                    <td className="p-2 border">{item.user.name}</td>
+                    <td className="p-2 border">{item.status}</td>
+                    <td className="p-2 border text-gray-500">
+                      {new Date(item.updated_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="p-2 border text-center">
+                      {/* Dropdown Button */}
+                      <div className="relative">
+                        <button
+                          onClick={() => toggleDropdown(item.id)}
+                          className="bg-gray-200 hover:bg-gray-300 text-gray-600 p-2 rounded-full"
+                        >
+                          <FaEllipsisV />
+                        </button>
 
-                  <td className="p-2 border">{item.user.name}</td>
-                  <td className="p-2 border">{item.status}</td>
-                  <td className="p-2 border text-gray-500">
-                    {new Date(item.updated_at).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </td>
-                  <td className="p-2 border">{item.nik}</td>
-                  <td className="p-2 border">
-                    <div className="flex gap-2">
-                    <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600"
-                      onClick={() => window.location.href = `/cek-sop/${item.id}`}
-                    >
-                      Lihat
-                    </button>
-                    <button
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600"
-                      onClick={() => window.location.href = `/edit-sop/${item.id}`}
-                    >
-                      Edit
-                    </button>
-
-                      <button className="bg-green-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                        Unduh
-                      </button>
-                    </div>
+                        {/* Dropdown Menu */}
+                        {openDropdownId === item.id && (
+                          <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10">
+                            <button
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                              onClick={() => (window.location.href = `/cek-sop/${item.id}`)}
+                            >
+                              Lihat
+                            </button>
+                            <button
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                              onClick={() => (window.location.href = `/edit-sop/${item.id}`)}
+                            >
+                              Edit
+                            </button>
+                            <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="p-2 text-center text-gray-500">
+                    Tidak ada data yang sesuai.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-end mt-4">
-          <button className="px-4 py-2 border rounded">Prev</button>
-          <button className="ml-2 px-4 py-2 border rounded">Next</button>
         </div>
       </div>
     </UserLayout>

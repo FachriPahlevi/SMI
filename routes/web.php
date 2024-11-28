@@ -21,21 +21,46 @@ use App\Http\Controllers\DivisionController;
 |
 */
 
-Route::get('/', [IndexController::class, 'index'])->name('index');
-Route::get('/manajemen-user', [UserController::class, 'index'])->name('user');
-Route::get('/daftar-divisi', [DivisionController::class, 'index'])->name('divisi.index');
-Route::get('/daftar-sop/{id}', [SOPController::class, 'index'])->name('sop');
-Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
-Route::get('/cek-sop/{id}', [SOPController::class, 'show'])->name('sop.show');
-
-Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
-
-Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
 
 
-Route::get('/panduan', function () {
-    return Inertia::render('Panduan');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Rute yang berlaku untuk semua role (superadmin, admin, user)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/', [IndexController::class, 'index'])->name('index');
+    Route::get('/daftar-divisi', [DivisionController::class, 'index'])->name('divisi.index');
+    Route::get('/daftar-sop/{id}', [SOPController::class, 'index'])->name('sop');
+    Route::get('/cek-sop/{id}', [SOPController::class, 'show'])->name('sop.show');
+});
+
+// Rute khusus untuk superadmin
+Route::middleware(['role:superadmin'])->group(function () {
+    Route::get('/manajemen-user', [UserController::class, 'index'])->name('user');
+    Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
+    Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
+    Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
+});
+
+// Rute khusus untuk admin
+Route::middleware(['role:admin'])->group(function () {
+    Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
+    Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
+    Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
+});
+
+// Rute panduan (berlaku untuk semua role)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/panduan', function () {
+        return Inertia::render('Panduan');
+    })->name('dashboard');
+});
+
+
+
+
+
+
+
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

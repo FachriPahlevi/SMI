@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('file_path');
             $table->foreignId('id_sop')->constrained('sop')->onDelete('cascade');
-            $table->enum('category', ["flowchart", "sop", "lainnya" ]);
             $table->timestamps();
         });
     }

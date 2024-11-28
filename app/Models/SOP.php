@@ -14,12 +14,15 @@ class SOP extends Model
     protected $table = 'sop';
     protected $guarded = [];
 
-    public function division() {
-        return $this->hasMany(Division::class, 'id');
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'id_division', 'id');
     }
     
-    public function user() {
-        return $this->belongsTo(User::class, 'created_by');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
+    
     
 }

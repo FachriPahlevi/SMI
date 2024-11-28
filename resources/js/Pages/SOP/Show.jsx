@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import UserLayout from '@/Layouts/UserLayout';
 
 export default function Form({ sop = [], division = [] }) {
-  console.log(sop);
+  console.log("sop",sop);
+  console.log("division",sop.related_divisions);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,18 +35,16 @@ export default function Form({ sop = [], division = [] }) {
 
                   {/* Division */}
                   <div>
-                    <label className="block mb-2 font-medium text-gray-700">Division</label>
-                    {item.division?.map((division, index) => (
-                      <p key={index} className="text-gray-700 border rounded p-2 bg-gray-100">
-                        {division.name || 'Tidak ada nama divisi'}
+                    <label className="block mb-2 font-medium text-gray-700">Division</label>         
+                      <p className="text-gray-700 border rounded p-2 bg-gray-100">
+                        {item.division.name || 'Tidak ada nama divisi'}
                       </p>
-                    ))}
                   </div>
 
                   {/* Deskripsi SOP */}
                   <div>
                     <label className="block mb-2 font-medium text-gray-700">Deskripsi</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.Description || 'Tidak ada deskripsi'}</p>
+                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.description || 'Tidak ada deskripsi'}</p>
                   </div>
 
                   {/* File SOP */}
@@ -116,27 +115,26 @@ export default function Form({ sop = [], division = [] }) {
                       {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
                     </p>
                   </div>
-                </div>
+                  <div>
+  <label className="block mb-2 font-medium text-gray-700">Divisi Terkait</label>
+  <div className="grid grid-cols-2 gap-4">
+    {item.related_divisions && item.related_divisions.length > 0 ? (
+      item.related_divisions.map((div) => (
+        <p key={div.id} className="text-gray-700 border rounded p-2 bg-gray-100">
+          {div.name || 'Tidak ada nama divisi'}
+        </p>
+      ))
+    ) : (
+      <p className="text-gray-700">Tidak ada divisi terkait</p>
+    )}
+  </div>
+</div>
+
+                  </div>
               ))
             ) : (
               <p className="text-gray-700">Tidak ada data SOP yang tersedia.</p>
             )}
-
-            {/* Divisi */}
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">Divisi Terkait</label>
-              <div className="grid grid-cols-2 gap-4">
-                {division.length > 0 ? (
-                  division.map((div) => (
-                    <p key={div.id} className="text-gray-700 border rounded p-2 bg-gray-100">
-                      {div.name || 'Tidak ada nama divisi'}
-                    </p>
-                  ))
-                ) : (
-                  <p className="text-gray-700">Tidak ada divisi terkait</p>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </div>

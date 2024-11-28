@@ -17,7 +17,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('id_division')->constrained('divisions')->onDelete('cascade');
         $table->string('title');
-        $table->string('Description');
+        $table->string('description');
         $table->string('sop')->nullable();
         $table->string('flowchart')->nullable();
         $table->enum('status', ['disetujui', 'menunggu', 'ditolak'])->default('menunggu');

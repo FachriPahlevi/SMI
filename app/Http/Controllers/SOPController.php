@@ -10,6 +10,8 @@ use App\Models\Division;
 use App\Models\FilesExtended;
 use App\Models\Notification;
 
+use Illuminate\Support\Facades\Log; 
+
 class SOPController extends Controller
 {
     /**
@@ -19,9 +21,10 @@ class SOPController extends Controller
      */
     public function index(Request $request, $id)
     {
-        $sop = SOP::where('id_division', $id)
+        $sop = SOP::where('id_division',$id)
         ->with('user', 'division')
         ->get();
+       
 
         return Inertia::render('SOP/SOP', [
             "sop" => $sop,
@@ -50,6 +53,10 @@ class SOPController extends Controller
      */
     public function store(Request $request)
     {
+        //Log::info('Request Data:', $request->all());
+        //Log::info('Supporting files:', $request->file('supported_files'));
+
+        //dd($request->all());
         // Validasi input
         $request->validate([
             'id_division' => 'required|exists:divisions,id',
@@ -61,7 +68,7 @@ class SOPController extends Controller
             'divisions.*' => 'exists:divisions,id',
             'supporting_files' => 'nullable|array',
             'supporting_files.*.file' => 'nullable|file|max:2048',
-            'supporting_files.*.category' => 'required_with:supporting_files.*.file|string',
+            'supporting_files.*.name' => 'required_with:supporting_files.*.file|string',
         ]);
     
         // Proses file SOP
@@ -100,11 +107,11 @@ class SOPController extends Controller
         // Proses file-file pendukung ke tabel files_extended
         if ($request->has('supporting_files')) {
             foreach ($request->supporting_files as $supportingFile) {
-                if (isset($supportingFile['file']) && isset($supportingFile['category'])) {
+                if (isset($supportingFile['file']) && isset($supportingFile['name'])) {
                     $file = $supportingFile['file'];
-                    $fileName = time() . '_' . $supportingFile['category'] . '_' . $file->getClientOriginalName();
+                    $fileName = time() . '_' . $supportingFile['name'] . '_' . $file->getClientOriginalName();
                     // Simpan di public/storage/supporting-files
-                    $filePath = $file->storeAs('public/supporting-files', $fileName);
+                    $filePath = $file->storeAs('public/lainnya', $fileName);
                     // Ubah path agar bisa diakses via URL
                     $filePath = 'storage/extended/' . $fileName;
                     
@@ -112,7 +119,6 @@ class SOPController extends Controller
                         'name' => $file->getClientOriginalName(),
                         'file_path' => $filePath,
                         'id_sop' => $sop->id,
-                        'category' => $supportingFile['category'],
                     ]);
                 }
             }
@@ -149,7 +155,14 @@ class SOPController extends Controller
         $division = Division::all();
         $sop = SOP::where('id', $id)
         ->with('division')
-        ->get();
+        ->get()
+        ->map(function($item){
+            $relatedDivisionIds = json_decode($item->related_division, true);
+            $relatedDivisions = Division::whereIn('id',$relatedDivisionIds)->get();
+            $item->related_divisions = $relatedDivisions;
+            return $item;
+        });
+
         return Inertia::render('SOP/Show', [
             'sop'=> $sop,
             'division' => $division,
@@ -164,10 +177,25 @@ class SOPController extends Controller
      */
     public function edit($id)
     {
-            $sop = SOP::where('id', $id)->get();
-            return Inertia::render('SOP/Edit', [
-                'sop'=> $sop,
-            ]);
+        $sop = SOP::where('id', $id)
+            ->with('division')
+            ->first(); // Gunakan first() untuk mendapatkan single model
+    
+        if (!$sop) {
+            return redirect()->back()->with('error', 'SOP tidak ditemukan');
+        }
+    
+        // Decode related divisions
+        $relatedDivisionIds = json_decode($sop->related_division, true) ?? [];
+        $relatedDivision = Division::whereIn('id', $relatedDivisionIds)->get();
+        $sop->related_division = $relatedDivision;
+    
+        $division = Division::all();
+        
+        return Inertia::render('SOP/Edit', [
+            'sop' => $sop,
+            'division' => $division,
+        ]);
     }
 
     /**

@@ -10,4 +10,10 @@ class Division extends Model
     use HasFactory;
     protected $table = 'divisions';
     protected $guarded = [];
+
+    public function sop()
+{
+    return $this->hasMany(SOP::class, 'id_division', 'id');
+}
+
 }

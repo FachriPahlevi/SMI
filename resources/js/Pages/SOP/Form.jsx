@@ -1,39 +1,49 @@
 import React, { useState } from 'react';
+import axios from 'axios';  // Import axios
 import { useForm } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 
 export default function Form({ division }) {
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, processing, errors } = useForm({
     title: '',
     description: '',
     flowchart_file: null,
     sop_file: null,
     supporting_files: [],
     divisions: [],
-    id_division: '', // Tambahkan ini untuk divisi utama
+    id_division: '',
   });
 
-  const [supportingFileInputs, setSupportingFileInputs] = useState([{ id: 0, category: '', file: null }]);
+  const [supportingFileInputs, setSupportingFileInputs] = useState([{ id: 0, name: '', file: null }]);
 
   const handleFileChange = (e, fileType) => {
     const file = e.target.files[0];
-    setData(fileType, file);
+    if (file) {
+      setData(fileType, file);
+    }
   };
 
   const handleSupportingFileChange = (e, index) => {
     const newSupportingFiles = [...supportingFileInputs];
-    newSupportingFiles[index].file = e.target.files[0];
-    setSupportingFileInputs(newSupportingFiles);
+    const file = e.target.files[0];
+    if (file) {
+      newSupportingFiles[index] = { ...newSupportingFiles[index], file };
+      setSupportingFileInputs(newSupportingFiles);
+    }
   };
 
-  const handleSupportingCategoryChange = (e, index) => {
+  const removeSupportingFileInput = (indexToRemove) => {
+    setSupportingFileInputs(supportingFileInputs.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleSupportingNameChange = (e, index) => {
     const newSupportingFiles = [...supportingFileInputs];
-    newSupportingFiles[index].category = e.target.value;
+    newSupportingFiles[index].name = e.target.value;
     setSupportingFileInputs(newSupportingFiles);
   };
 
   const handleAddSupportingFileInput = () => {
-    setSupportingFileInputs([...supportingFileInputs, { id: supportingFileInputs.length, category: '', file: null }]);
+    setSupportingFileInputs([...supportingFileInputs, { id: supportingFileInputs.length, name: '', file: null }]);
   };
 
   const handleDivisionChange = (divisionId) => {
@@ -41,39 +51,42 @@ export default function Form({ division }) {
     const newDivisions = currentDivisions.includes(divisionId)
       ? currentDivisions.filter(id => id !== divisionId)
       : [...currentDivisions, divisionId];
-    
     setData('divisions', newDivisions);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const formData = new FormData();
-    
-    // Append semua data form
-    Object.keys(data).forEach(key => {
-      if (key === 'supporting_files') {
-        supportingFileInputs.forEach((fileData, index) => {
-          if (fileData.category && fileData.file) {
-            formData.append(`supporting_files[${index}][category]`, fileData.category);
-            formData.append(`supporting_files[${index}][file]`, fileData.file);
-          }
-        });
-      } else if (key === 'divisions') {
-        const divisionsArray = Array.isArray(data[key]) ? data[key] : [];
-        divisionsArray.forEach(division => {
-          formData.append('divisions[]', division);
-        });
-      } else if (data[key]) {
-        formData.append(key, data[key]);
-      }
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('id_division', data.id_division);
+    formData.append('flowchart_file', data.flowchart_file);
+    formData.append('sop_file', data.sop_file);
+    data.divisions.forEach((division) => {
+        formData.append('divisions[]', division);
     });
 
-    // Gunakan route yang benar
-    post(route('sop.store'), {
-      data: formData,
-      forceFormData: true,
-      onSuccess: () => {
-        // Optional: Reset form setelah berhasil
+    supportingFileInputs.forEach((file, index) => {
+        formData.append(`supporting_files[${index}][name]`, file.name);
+        formData.append(`supporting_files[${index}][file]`, file.file);
+    });
+
+    // Debug log
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
+    try {
+      // Make the POST request using axios
+      const response = await axios.post(route('sop.store'), formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Handle success response
+      if (response.status === 200) {
         setData({
           title: '',
           description: '',
@@ -81,11 +94,16 @@ export default function Form({ division }) {
           sop_file: null,
           supporting_files: [],
           divisions: [],
-          id_division: ''
+          id_division: '',
         });
-        setSupportingFileInputs([{ id: 0, category: '', file: null }]);
-      },
-    });
+        setSupportingFileInputs([{ id: 0, name: '', file: null }]);
+        alert('SOP submitted successfully!');
+      }
+    } catch (error) {
+      // Handle error
+      console.error('Error submitting SOP:', error);
+      alert('There was an error submitting the SOP. Please try again.');
+    }
   };
 
   return (
@@ -93,8 +111,8 @@ export default function Form({ division }) {
       <div className="mx-auto p-6 w-full">
         <div className="bg-white p-6 rounded shadow-lg">
           <h1 className="text-2xl font-semibold mb-4">Form Pengajuan SOP</h1>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tambahkan field untuk divisi utama */}
+          <form onSubmit={handleSubmit} encType='multipart/form-data' className="space-y-6">
+            {/* Add main division field */}
             <div>
               <label className="block mb-2">Divisi Utama</label>
               <select
@@ -169,21 +187,32 @@ export default function Form({ division }) {
 
             {/* Supporting files section */}
             <div>
-              <label className="block mb-2">Tambah File Pendukung (Opsional)</label>
+              <label className="block text-gray-700 mb-2">Tambah File Pendukung (Opsional)</label>
               {supportingFileInputs.map((input, index) => (
-                <div key={input.id} className="mb-4 grid grid-cols-2 gap-5">
+                <div key={input.id} className="mb-4 grid md:grid-cols-2 gap-4 mb-4 shadow-md p-3">
                   <input
                     type="text"
-                    value={input.category}
-                    onChange={(e) => handleSupportingCategoryChange(e, index)}
-                    placeholder="Masukkan Kategori"
+                    value={input.name}
+                    onChange={(e) => handleSupportingNameChange(e, index)}
+                    placeholder="Masukkan Nama"
                     className="w-full border rounded p-2 mt-2"
                   />
-                  <input
-                    type="file"
-                    onChange={(e) => handleSupportingFileChange(e, index)}
-                    className="w-full border rounded p-2"
-                  />
+                  <div className='flex items-center space-x-2'> 
+                    <input
+                      type="file"
+                      onChange={(e) => handleSupportingFileChange(e, index)}
+                      className="w-full border rounded p-2"
+                    />
+                    {supportingFileInputs.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSupportingFileInput(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Hapus
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               <button
@@ -191,37 +220,35 @@ export default function Form({ division }) {
                 onClick={handleAddSupportingFileInput}
                 className="text-blue-600 underline"
               >
-                Tambah File Pendukung
+                +Tambah File Pendukung
               </button>
             </div>
 
             {/* Division selection */}
             <div>
-              <label className="block mb-2">Pilih Divisi Terkait</label>
+              <label className="block mb-2">Pilih Divisi Yang Terkait Dengan SOP Ini</label>
               <div className="grid grid-cols-2 gap-4">
                 {division.map((div) => (
                   <div key={div.id} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      id={`division-${div.id}`}
-                      checked={Array.isArray(data.divisions) && data.divisions.includes(div.id)}
+                      checked={data.divisions.includes(div.id)}
                       onChange={() => handleDivisionChange(div.id)}
-                      className="form-checkbox h-4 w-4 text-blue-600"
+                      className="h-4 w-4"
                     />
-                    <label htmlFor={`division-${div.id}`} className="text-sm">{div.name}</label>
+                    <span>{div.name}</span>
                   </div>
                 ))}
               </div>
-              {errors.divisions && <p className="text-red-500 text-sm">{errors.divisions}</p>}
             </div>
-            
+
             {/* Submit button */}
             <button
               type="submit"
+              className={`w-full bg-blue-600 text-white p-3 rounded ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={processing}
-              className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
-              {processing ? 'Mengirim...' : 'Kirim Dokumen'}
+              {processing ? 'Submitting...' : 'Kirim SOP'}
             </button>
           </form>
         </div>

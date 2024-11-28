@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
             UserSeeder::class,
             SOPSeeder::class,
+            NotificationSeeder::class,
             
         ]);
     }

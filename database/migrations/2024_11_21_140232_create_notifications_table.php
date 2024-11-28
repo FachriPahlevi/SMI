@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_division')->constrained('divisions')->ondelete('restrict');
+            $table->foreignId('id_sop')->constrained('sop')->ondelete('cascade');
             $table->string('message');
             $table->enum('status', ['read', 'unread']);
             $table->timestamps();

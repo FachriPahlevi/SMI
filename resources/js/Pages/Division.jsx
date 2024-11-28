@@ -3,6 +3,7 @@ import UserLayout from '@/Layouts/UserLayout';
 import { FaFolder } from "react-icons/fa";
 
 export default function Division({ division }) {
+  console.log("division", division);
   return (
     <UserLayout>
       <div className="p-4">
@@ -11,9 +12,9 @@ export default function Division({ division }) {
           <h2 className="text-2xl font-bold">Daftar Divisi</h2>
         </div>
 
-        {/* Filter*/}  
+        {/* Filter */}
         <div className="flex items-center justify-between mb-4">
-            <p className='text-gray-400'>Daftar Divisi</p>
+          <p className='text-gray-400'>Daftar Divisi</p>
           <div className="flex gap-4">
             <select className="border rounded py-1">
               <option value="">Status</option>
@@ -33,38 +34,42 @@ export default function Division({ division }) {
           <table className="min-w-full bg-white border">
             <thead>
               <tr className="bg-gray-200 text-left">
-                <th className="p-2 border">Divisi</th>
-                <th className="p-2 border">Admin</th>
-                <th className="p-2 border">Terakhir Diubah</th>
-                <th className="p-2 border">Ukuran File</th>
-                <th className="p-2 border">Aksi</th>
+                <th className="p-2 ">Divisi</th>
+                <th className="p-2 ">Admin</th>
+                <th className="p-2 ">Terakhir Diubah</th>
               </tr>
             </thead>
             <tbody>
               {division.map((division, index) => (
-                <tr key={index} className="hover:bg-gray-100">
-                  <td className="p-2 border text-left">
+                <tr
+                  key={index}
+                  className="hover:bg-gray-500"
+                  onClick={() => window.location.href= `/daftar-sop/${division.id}`}
+                >
+                  <td className="p-2 text-left">
                     <div className="flex items-center gap-3">
-                        <FaFolder className="text-yellow-500" />
-                        {division.name}
+                      <FaFolder className="text-yellow-500" />
+                      {division.name}
                     </div>
-                    </td>
+                  </td>
 
-                  <td className="p-2 border">{division.nik}</td>
-                  <td className="p-2 border">{division.nik}</td>
-                  <td className="p-2 border">{division.nik}</td>
-                  <td className="p-2 border">
-                    <div className="flex gap-2">
-                    <button 
-                      className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-gray-600"
-                      onClick={() => window.location.href = `daftar-sop/${division.id}`}
-                    >
-                      Lihat
-                    </button>
-                      <button className="bg-green-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                        Unduh
-                      </button>
-                    </div>
+                  {/* Menampilkan nama admin dari divisi */}
+                  <td className="p-2 ">
+                    {division.position && division.position.length > 0
+                      ? division.position
+                          .flatMap(position => position.user) // Mendapatkan semua user dari posisi
+                          .filter(user => user.role === "admin") // Memfilter user dengan role admin
+                          .map(admin => admin.name)
+                          .join(", ") || "Tidak Ada Admin"
+                      : "Tidak Ada Admin"}
+                  </td>
+
+                  <td className="p-2 border text-gray-500">
+                    {new Date(division.updated_at).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
                   </td>
                 </tr>
               ))}

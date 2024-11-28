@@ -9,6 +9,7 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SOPController;
 use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,13 +38,17 @@ Route::middleware(['role:superadmin'])->group(function () {
     Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
     Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
     Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
+    Route::get('/notifications', [NotificationController::class, 'index']);
 });
 
 // Rute khusus untuk admin
 Route::middleware(['role:admin'])->group(function () {
     Route::get('/tambah-sop', [SOPController::class, 'create'])->name('sop.create');
+    Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
     Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
+    Route::post('/api/notifications/{id}/mark-as-read', [NotificationController::class, 'store']);
+
 });
 
 // Rute panduan (berlaku untuk semua role)

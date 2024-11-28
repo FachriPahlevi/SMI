@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\Division;
+use App\Models\User;
+use App\Models\Position;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class NotificationController extends Controller
 {
@@ -14,8 +19,22 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        //
+
+        $user = auth()->user();
+        $position = $user->position;
+        $division = $position->division;
+
+
+        // Ambil semua data notification
+        $notifications = Notification::where('id_division', $division->id)->get();
+
+        // Kembalikan data sebagai JSON
+        return response()->json([
+            'success' => true,
+            'data' => $notifications,
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -33,9 +52,15 @@ class NotificationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $id)
     {
-        //
+    $notification = Notification::findOrFail($id);
+    $notification->update(['status' => 'read']);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Notification marked as read',
+    ]);
     }
 
     /**

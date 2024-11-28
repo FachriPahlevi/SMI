@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Division;
+use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+
 class DivisionController extends Controller
 {
     /**
@@ -14,11 +18,19 @@ class DivisionController extends Controller
      */
     public function index()
     {
-        $division = Division::all();
+        // Mengambil semua divisi beserta posisi dan hanya user dengan role 'admin'
+        $division = Division::with(['position.user' => function ($query) {
+            $query->where('role', 'admin'); // Memfilter user yang memiliki role 'admin'
+        }])->get();
+
+       // dd($division);
+    
         return Inertia::render('Division', [
-            "division" => $division,
+            'division' => $division,
         ]);
     }
+    
+    
 
     /**
      * Show the form for creating a new resource.

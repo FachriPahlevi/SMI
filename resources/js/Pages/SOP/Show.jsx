@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import UserLayout from '@/Layouts/UserLayout';
 
 export default function Form({ sop = [], division = [] }) {
-  console.log("sop",sop);
-  console.log("division",sop.related_divisions);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -16,135 +14,177 @@ export default function Form({ sop = [], division = [] }) {
   // Close modal
   const closeModal = () => setIsOpen(false);
 
+  // Status color mapping
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'disetujui':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'menunggu':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'ditolak':
+        return 'bg-red-100 text-red-800 border-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
   return (
     <UserLayout>
-      <div className="mx-auto p-6 w-full">
-        <p className="text-gray-400">Divisi / SOP / Show</p>
-        <div className="bg-white p-6 rounded shadow-lg">
-          <h1 className="text-2xl font-semibold mb-4">Detail SOP</h1>
-          <div className="space-y-6">
-            {/* Menampilkan Data SOP */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          {/* Header */}
+          <div className="bg-gray-50 px-6 py-4 border-b">
+            <h1 className="text-3xl font-bold text-gray-800">Detail Standar Operasional Prosedur (SOP)</h1>
+          </div>
+
+          {/* SOP Content */}
+          <div className="p-6">
             {sop.length > 0 ? (
               sop.map((item) => (
-                <div key={item.id} className="space-y-4 border-b pb-4 mb-4">
-                  {/* Judul SOP */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Judul</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.title || 'Tidak ada judul'}</p>
-                  </div>
-
-                  {/* Division */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Division</label>         
-                      <p className="text-gray-700 border rounded p-2 bg-gray-100">
-                        {item.division.name || 'Tidak ada nama divisi'}
-                      </p>
-                  </div>
-
-                  {/* Deskripsi SOP */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Deskripsi</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.description || 'Tidak ada deskripsi'}</p>
-                  </div>
-
-                  {/* File SOP */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">File SOP</label>
-                    <div className="mb-2">
-                      <a
-                        href={`/storage/sop/${item.sop?.split('/').pop()}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                      >
-                        {item.sop ? 'Lihat File PDF' : 'File tidak tersedia'}
-                      </a>
+                <div key={item.id} className="space-y-6">
+                  {/* Status Section with Prominent Display */}
+                  <div className="flex items-center space-x-4 mb-6">
+                    <span className="text-lg font-semibold">Status:</span>
+                    <div className={`px-4 py-2 rounded-full font-bold uppercase ${getStatusColor(item.status)}`}>
+                      {item.status || 'Tidak Diketahui'}
                     </div>
                   </div>
 
-                  {/* File Flowchart */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">File Flowchart</label>
-                    <div className="mb-2">
-                      {item.flowchart ? (
-                        <>
-                          {/* Thumbnail */}
-                          <img
-                            src={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
-                            alt={`Flowchart ${item.title}`}
-                            className="border rounded cursor-pointer"
-                            style={{ width: '150px', height: 'auto' }}
-                            onClick={() => openModal(`/storage/flowchart/${item.flowchart?.split('/').pop()}`)}
-                          />
+                  {/* Grid Layout for Details */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Judul SOP</label>
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                          {item.title || 'Tidak ada judul'}
+                        </div>
+                      </div>
 
-                          {/* Download Link */}
-                          <div className="mt-2">
-                            <a
-                              href={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
-                              download
-                              className="text-blue-500 underline"
-                            >
-                              Unduh Flowchart
-                            </a>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Divisi</label>
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                          {item.division.name || 'Tidak ada nama divisi'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Deskripsi</label>
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200 min-h-[100px]">
+                          {item.description || 'Tidak ada deskripsi'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      {/* File SOP */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">File SOP</label>
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                          <a
+                            href={`/storage/sop/${item.sop?.split('/').pop()}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {item.sop ? 'Lihat File PDF' : 'File tidak tersedia'}
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Flowchart */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Flowchart</label>
+                        {item.flowchart ? (
+                          <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                            <img
+                              src={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
+                              alt={`Flowchart ${item.title}`}
+                              className="w-full h-48 object-cover rounded cursor-pointer"
+                              onClick={() => openModal(`/storage/flowchart/${item.flowchart?.split('/').pop()}`)}
+                            />
+                            <div className="mt-2 text-center">
+                              <a
+                                href={`/storage/flowchart/${item.flowchart?.split('/').pop()}`}
+                                download
+                                className="text-blue-600 hover:underline"
+                              >
+                                Unduh Flowchart
+                              </a>
+                            </div>
                           </div>
-                        </>
+                        ) : (
+                          <div className="bg-gray-50 p-3 rounded-md border border-gray-200 text-gray-500">
+                            Flowchart tidak tersedia
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Information */}
+                  <div className="grid md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Dibuat Pada</label>
+                      <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                        {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Terakhir Diperbarui</label>
+                      <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                        {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Related Divisions */}
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Divisi Terkait</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {item.related_divisions && item.related_divisions.length > 0 ? (
+                        item.related_divisions.map((div) => (
+                          <div 
+                            key={div.id} 
+                            className="bg-gray-50 p-3 rounded-md border border-gray-200"
+                          >
+                            {div.name || 'Tidak ada nama divisi'}
+                          </div>
+                        ))
                       ) : (
-                        <p className="text-gray-700">Flowchart tidak tersedia</p>
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200 text-gray-500">
+                          Tidak ada divisi terkait
+                        </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Status SOP */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Status</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">{item.status || 'Tidak ada status'}</p>
-                  </div>
-
-                  {/* Dibuat Pada */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Dibuat Pada</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">
-                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
-                    </p>
-                  </div>
-
-                  {/* Diperbarui Tanggal */}
-                  <div>
-                    <label className="block mb-2 font-medium text-gray-700">Diperbarui Tanggal</label>
-                    <p className="text-gray-700 border rounded p-2 bg-gray-100">
-                      {item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'Tanggal tidak tersedia'}
-                    </p>
-                  </div>
-                  <div>
-  <label className="block mb-2 font-medium text-gray-700">Divisi Terkait</label>
-  <div className="grid grid-cols-2 gap-4">
-    {item.related_divisions && item.related_divisions.length > 0 ? (
-      item.related_divisions.map((div) => (
-        <p key={div.id} className="text-gray-700 border rounded p-2 bg-gray-100">
-          {div.name || 'Tidak ada nama divisi'}
-        </p>
-      ))
-    ) : (
-      <p className="text-gray-700">Tidak ada divisi terkait</p>
-    )}
-  </div>
-</div>
-
-                  </div>
+                </div>
               ))
             ) : (
-              <p className="text-gray-700">Tidak ada data SOP yang tersedia.</p>
+              <div className="text-center py-10 text-gray-500">
+                Tidak ada data SOP yang tersedia.
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Modal untuk menampilkan gambar yang diperbesar */}
+      {/* Modal for Enlarged Image */}
       {isOpen && (
-        <div className="modal-open fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded shadow-lg">
-            <button onClick={closeModal} className="absolute top-0 right-0 text-gray-500">X</button>
-            <img src={selectedImage} alt="Selected" className="max-w-full max-h-full" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="relative bg-white p-4 rounded-lg shadow-xl max-w-4xl max-h-[90vh]">
+            <button 
+              onClick={closeModal} 
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
+            >
+              ✕
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Selected" 
+              className="max-w-full max-h-[80vh] object-contain" 
+            />
           </div>
         </div>
       )}

@@ -3,7 +3,6 @@ import UserLayout from '@/Layouts/UserLayout';
 import { FaFolder } from "react-icons/fa";
 
 export default function Division({ division }) {
-  console.log("division", division);
   return (
     <UserLayout>
       <div className="p-4">
@@ -14,7 +13,7 @@ export default function Division({ division }) {
 
         {/* Filter */}
         <div className="flex items-center justify-between mb-4">
-          <p className='text-gray-400'>Daftar Divisi</p>
+          <p className='text-gray-400'>Divisi</p>
           <div className="flex gap-4">
             <select className="border rounded py-1">
               <option value="">Status</option>
@@ -64,7 +63,7 @@ export default function Division({ division }) {
                       : "Tidak Ada Admin"}
                   </td>
 
-                  <td className="p-2 border text-gray-500">
+                  <td className="p-2 text-gray-500">
                     {new Date(division.updated_at).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "long",
@@ -75,12 +74,6 @@ export default function Division({ division }) {
               ))}
             </tbody>
           </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-end mt-4">
-          <button className="px-4 py-2 border rounded">Prev</button>
-          <button className="ml-2 px-4 py-2 border rounded">Next</button>
         </div>
       </div>
     </UserLayout>

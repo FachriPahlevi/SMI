@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import UserLayout from "@/Layouts/UserLayout";
 import { FaFolder, FaEllipsisV } from "react-icons/fa";
 
-export default function SOP({ sop }) {
+export default function SOP({ sop, division }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -23,12 +23,12 @@ export default function SOP({ sop }) {
       <div className="p-4">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold">Daftar SOP</h2>
+          <h2 className="text-2xl font-bold">Daftar SOP {division.name}</h2>
         </div>
 
         {/* Filter Section */}
         <div className="flex items-center justify-between text-gray-400 mb-4">
-          <p>Daftar Divisi / Daftar SOP</p>
+          <p>Divisi / SOP {division.name}</p>
           <div className="flex gap-4">
             {/* Filter Status */}
             <select

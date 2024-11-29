@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaFileAlt, FaSitemap } from 'react-icons/fa';
+import { FaUser, FaFileAlt } from 'react-icons/fa';
 
 export default function Sidebar({ auth }) {
   const [selectedKey, setSelectedKey] = useState(window.location.pathname);
@@ -18,8 +18,8 @@ export default function Sidebar({ auth }) {
   }, []);
 
   const navigate = (path) => {
-    window.history.pushState({}, '', path); // Perbarui URL tanpa reload halaman
-    setSelectedKey(path); // Perbarui state selectedKey
+    // Redirect ke halaman dan refresh halaman
+    window.location.href = path;
   };
 
   return (
@@ -28,20 +28,24 @@ export default function Sidebar({ auth }) {
         {auth.user.role}
       </div>
       <ul className="menu mt-4">
-        <li
-          className={`menu-item px-4 py-2 flex items-center cursor-pointer ${
-            selectedKey === '/manajemen-user' ? 'bg-gray-700' : ''
-          }`}
-          onClick={() => navigate('/manajemen-user')} // Gunakan navigate untuk berpindah
-        >
-          <FaUser className="mr-2" />
-          Manajemen User
-        </li>
+        {/* Manajemen User */}
+        {auth.user.role !== 'superadmin' ? null :
+          <li
+            className={`menu-item px-4 py-2 flex items-center cursor-pointer ${
+              selectedKey === '/manajemen-user' ? 'bg-gray-700' : ''
+            }`}
+            onClick={() => navigate('/manajemen-user')}
+          >
+            <FaUser className="mr-2" />
+            Manajemen User
+          </li>
+        }
+        {/* End Manajemen User */}
         <li
           className={`menu-item px-4 py-2 flex items-center cursor-pointer ${
             selectedKey === '/daftar-sop' || selectedKey === '/daftar-divisi' ? 'bg-gray-700' : ''
           }`}
-          onClick={() => navigate('/daftar-divisi')} // Gunakan navigate untuk berpindah
+          onClick={() => navigate('/daftar-divisi')}
         >
           <FaFileAlt className="mr-2" />
           Daftar SOP

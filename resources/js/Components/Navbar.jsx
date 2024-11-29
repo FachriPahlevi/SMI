@@ -4,7 +4,6 @@ import { FaBell } from "react-icons/fa";
 import axios from 'axios';
 
 export default function Navbar({ auth }) {
-  console.log(auth);
   const { post } = useForm();
   const [isOpenProfile, setIsOpenProfile] = useState(false);
   const [isOpenNotification, setIsOpenNotification] = useState(false);
@@ -13,7 +12,6 @@ export default function Navbar({ auth }) {
   useEffect(() => {
     axios.get('/notifications')
     .then((response) => {
-      console.log(response.data); // Periksa apakah data diterima
       if (response.data.success && response.data.data) {
         setNotifications(response.data.data);
       }

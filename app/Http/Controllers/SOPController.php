@@ -24,10 +24,13 @@ class SOPController extends Controller
         $sop = SOP::where('id_division',$id)
         ->with('user', 'division')
         ->get();
+
+        $division = Division::where('id', $id)->first();
        
 
         return Inertia::render('SOP/SOP', [
             "sop" => $sop,
+            "division" => $division
         ]);
     }
 
@@ -53,10 +56,6 @@ class SOPController extends Controller
      */
     public function store(Request $request)
     {
-        //Log::info('Request Data:', $request->all());
-        //Log::info('Supporting files:', $request->file('supported_files'));
-
-        //dd($request->all());
         // Validasi input
         $request->validate([
             'id_division' => 'required|exists:divisions,id',
@@ -151,23 +150,34 @@ class SOPController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
+{
+    try {
         $division = Division::all();
+
         $sop = SOP::where('id', $id)
-        ->with('division')
-        ->get()
-        ->map(function($item){
-            $relatedDivisionIds = json_decode($item->related_division, true);
-            $relatedDivisions = Division::whereIn('id',$relatedDivisionIds)->get();
-            $item->related_divisions = $relatedDivisions;
-            return $item;
-        });
+            ->with('division')
+            ->get()
+            ->map(function ($item) {
+                $relatedDivisionIds = json_decode($item->related_division, true);
+                if (is_array($relatedDivisionIds)) {
+                    $relatedDivisions = Division::whereIn('id', $relatedDivisionIds)->get();
+                } else {
+                    $relatedDivisions = collect();
+                }
+
+                $item->related_divisions = $relatedDivisions;
+                return $item;
+            });
 
         return Inertia::render('SOP/Show', [
-            'sop'=> $sop,
+            'sop' => $sop,
             'division' => $division,
         ]);
+    } catch (\Exception $e) {
+        return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
     }
+}
+
 
     /**
      * Show the form for editing the specified resource.

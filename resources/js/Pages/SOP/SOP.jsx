@@ -10,8 +10,10 @@ import {
   FaEdit, 
   FaTrash 
 } from "react-icons/fa";
+import Swal from 'sweetalert2';
 
-export default function SOP({ sop, division }) {
+export default function SOP({ sop, division, auth }) {
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -26,6 +28,37 @@ export default function SOP({ sop, division }) {
   const toggleDropdown = (id) => {
     setOpenDropdownId(openDropdownId === id ? null : id);
   };
+
+  const handleDelete = async (id) => {
+    Swal.fire({
+      title: 'Yakin ingin menghapus?',
+      text: 'Data yang dihapus tidak dapat dikembalikan!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, hapus!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.delete(route('sop.destroy', id)); // Sesuaikan route untuk delete
+  
+          if (response.status === 200) { // Periksa apakah respons sukses
+            Swal.fire('Berhasil!', 'Data berhasil dihapus.', 'success');
+            // Tambahkan logika untuk memperbarui data di tabel
+            window.location.reload();
+          } else {
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');
+          }
+        } catch (error) {
+          Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');
+          console.error(error);
+        }
+      }
+    });
+  };
+  
+
 
   // Status color mapping
   const getStatusColor = (status) => {
@@ -50,6 +83,17 @@ export default function SOP({ sop, division }) {
           {/* Filter Section */}
           <div className="bg-white shadow-md rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between">
+              {auth.user.role === 'admin' || auth.user.role === 'superadmin' ? (
+              <button
+              className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+              onClick={() => (window.location.href = "/tambah-sop")}
+            >
+              <FaPlus className="mr-2" /> Tambah SOP
+            </button>
+              )
+            :
+            null
+            }
               <div className="flex items-center space-x-4">
                 <div className="relative flex-grow">
                   <input
@@ -64,7 +108,7 @@ export default function SOP({ sop, division }) {
 
                 <div className="relative">
                   <select
-                    className="appearance-none w-full pl-8 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="appearance-none w-full pl-8 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >
@@ -77,18 +121,13 @@ export default function SOP({ sop, division }) {
                 </div>
               </div>
 
-              <button
-                className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                onClick={() => (window.location.href = "/tambah-sop")}
-              >
-                <FaPlus className="mr-2" /> Tambah SOP
-              </button>
+             
             </div>
           </div>
 
           {/* Table Section */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full">
+          <div className="bg-white shadow-md rounded-lg overflow-hidden pb-24">
+            <table className="min-w-full p-12">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
@@ -131,22 +170,30 @@ export default function SOP({ sop, division }) {
                           </button>
 
                           {openDropdownId === item.id && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-10">
+                            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-9999">
                               <button
                                 className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
                                 onClick={() => (window.location.href = `/cek-sop/${item.id}`)}
                               >
-                                <FaEye className="mr-2" /> Lihat
+                                <FaEye className="mr-2" /> Detail
                               </button>
-                              <button
-                                className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
-                                onClick={() => (window.location.href = `/edit-sop/${item.id}`)}
+                              {auth.user.role === 'admin' || auth.user.role === 'superadmin' ? (
+                              <>
+                                <button
+                                  className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
+                                  onClick={() => (window.location.href = `/edit-sop/${item.id}`)}
+                                >
+                                  <FaEdit className="mr-2" /> Edit
+                                </button>
+                                <button
+                                className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+                                onClick={() => handleDelete(item.id)}
                               >
-                                <FaEdit className="mr-2" /> Edit
-                              </button>
-                              <button className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">
                                 <FaTrash className="mr-2" /> Hapus
                               </button>
+
+                              </>
+                            ) : null}         
                             </div>
                           )}
                         </div>

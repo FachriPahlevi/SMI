@@ -45,6 +45,7 @@ Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
     Route::post('/api/notifications/{id}/mark-as-read', [NotificationController::class, 'store']);
     Route::put('/sop/{sop}', [SOPController::class, 'update'])->name('sop.update');
+    Route::delete('/sop/delete/{id}', [SOPController::class, 'destroy'])->name('sop.destroy');
 });
 
 // Rute khusus untuk admin
@@ -55,6 +56,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
     Route::post('/api/notifications/{id}/mark-as-read', [NotificationController::class, 'store']);
     Route::put('/sop/{sop}', [SOPController::class, 'update'])->name('sop.update');
+    Route::delete('/sop/delete/{id}', [SOPController::class, 'destroy'])->name('sop.destroy');
 });
 
 // Rute untuk profile

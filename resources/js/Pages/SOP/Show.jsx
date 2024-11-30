@@ -168,19 +168,87 @@ export default function Form({ sop = [], supportedFile = [], division = [] }) {
               </div>
             )}
           </div>
-          <div>
+          <div className="">
             {supportedFile.length > 0 ? (
-              supportedFile.map((item) => (
-                <div key={item.id} className="space-y-6">
-                  <h1>{item.name}</h1>
-                </div>
-                  ))
-                ) : (
-                  <div className="text-center py-10 text-gray-500">
-                    Tidak ada data tambahan
+              <div className='p-4'>
+                <h1 className="font-bold">Data Tambahan</h1>
+                {supportedFile.map((item) => (
+                  <div
+                    key={item.id}
+                    className="space-y-6 p-6 w-full justify-between"
+                  >
+                    {/* Nama File */}
+                    <div className="items-center">
+                      <label className="text-sm font-medium text-gray-600 mb-2">
+                        Nama File
+                      </label>
+                      <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                        {item.name || "Tidak ada"}
+                      </div>
+                    </div>
+
+                    {/* File Section */}
+                    <div className="">
+                      <label className="text-sm font-medium text-gray-600 mb-2">
+                        File
+                      </label>
+                      {item.file_path ? (
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                          {/* Cek Tipe File */}
+                          {item.file_path.endsWith(".jpg") ||
+                          item.file_path.endsWith(".jpeg") ||
+                          item.file_path.endsWith(".png") ? (
+                            <img
+                              src={`/storage/lainnya/${item.file_path?.split("/").pop()}`}
+                              alt={`Data pendukung tidak ada ${item.title}`}
+                              className="w-full h-48 object-cover rounded cursor-pointer"
+                              onClick={() =>
+                                openModal(
+                                  `/storage/lainnya/${item.file_path?.split("/").pop()}`
+                                )
+                              }
+                            />
+                          ) : item.file_path.endsWith(".pdf") ? (
+                            <div className="text-center">
+                              <a
+                                href={`/storage/lainnya/${item.file_path?.split("/").pop()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Baca Flowchart (PDF)
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="text-gray-500">Tipe file tidak didukung</div>
+                          )}
+
+                          {/* Link untuk mengunduh file */}
+                          <div className="mt-2 text-center">
+                            <a
+                              href={`/storage/lainnya/${item.file_path?.split("/").pop()}`}
+                              download
+                              className="text-blue-600 hover:underline"
+                            >
+                              Unduh Flowchart
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-gray-50 p-3 rounded-md border border-gray-200 text-gray-500">
+                          Flowchart tidak tersedia
+                        </div>
+                      )}
+                    </div>
                   </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 text-gray-500">Tidak ada data tambahan</div>
+            )}
           </div>
+
+
         </div>
       </div>
 

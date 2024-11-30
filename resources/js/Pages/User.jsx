@@ -69,7 +69,7 @@ export default function User({ user }) {
                 {/* Status Filter */}
                 <div className="relative w-full sm:w-auto">
                   <select
-                    className="w-full pl-8 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-8 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                   >

@@ -10,7 +10,6 @@ import {
 
 export default function Division({ division }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   // Filter divisions based on search and status
@@ -48,20 +47,6 @@ export default function Division({ division }) {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                   <FaSearch className="absolute left-3 top-3 text-gray-400" />
-                </div>
-
-                {/* Status Filter */}
-                <div className="relative w-full sm:w-auto">
-                  <select
-                    className="w-full pl-8 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="">Semua Status</option>
-                    <option value="enabled">Disetujui</option>
-                    <option value="disabled">Ditolak</option>
-                  </select>
-                  <FaFilter className="absolute left-3 top-3 text-gray-400" />
                 </div>
               </div>
             </div>

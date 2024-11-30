@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('files_extended', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
+            $table->string('file_name')->nullable();
             $table->string('file_path');
             $table->foreignId('id_sop')->constrained('sop')->onDelete('cascade');
             $table->timestamps();

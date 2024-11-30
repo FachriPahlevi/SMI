@@ -116,10 +116,11 @@ class SOPController extends Controller
                     // Simpan di public/storage/supporting-files
                     $filePath = $file->storeAs('public/lainnya', $fileName);
                     // Ubah path agar bisa diakses via URL
-                    $filePath = 'storage/extended/' . $fileName;
+                    $filePath = 'storage/lainnya/' . $fileName;
                     
                     FilesExtended::create([
                         'name' => $supportingFile['name'],
+                        'file_name' => $filename,
                         'file_path' => $filePath,
                         'id_sop' => $sop->id,
                     ]);
@@ -314,7 +315,7 @@ class SOPController extends Controller
                 $file = $supportingFile['file'];
                 $fileName = time() . '_' . $supportingFile['name'] . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('public/lainnya', $fileName);
-                $filePath = 'storage/extended/' . $fileName;
+                $filePath = 'storage/lainnya/' . $fileName;
                 
                 FilesExtended::create([
                     'name' => $supportingFile['name'],
@@ -365,7 +366,14 @@ class SOPController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {
-        //
+{
+    $sop = Sop::find($id); // Cari data berdasarkan ID
+    if ($sop) { // Pastikan data ditemukan
+        $sop->delete(); // Hapus data
+        return response()->json(['message' => 'Data berhasil dihapus'], 200);
+    } else {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
     }
+}
+
 }

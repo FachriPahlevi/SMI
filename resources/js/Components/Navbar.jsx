@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, useForm  } from '@inertiajs/react';
 import { FaBell, FaBars, FaTimes } from "react-icons/fa";
 import axios from 'axios';
 
 export default function Navbar({ auth }) {
+  const { post } = useForm();
   const [isOpenProfile, setIsOpenProfile] = useState(false);
   const [isOpenNotification, setIsOpenNotification] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -24,7 +25,7 @@ export default function Navbar({ auth }) {
   const handleLogout = () => {
     post(route('logout'), {
       onSuccess: () => {
-        window.location.href = '/login';
+        window.location.href = '/login'; // Arahkan pengguna ke halaman login
       },
     });
   };

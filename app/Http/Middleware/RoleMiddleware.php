@@ -8,9 +8,20 @@ class RoleMiddleware
 {
     public function handle($request, Closure $next, $role)
     {
-        if (Auth::check() && Auth::user()->role === $role) {
-            return $next($request);
+        if (Auth::check()) {
+            $userRole = Auth::user()->role;
+            
+            // Superadmin dapat mengakses semua role
+            if ($userRole === 'superadmin') {
+                return $next($request);
+            }
+            
+            // Untuk role lain, harus sesuai
+            if ($userRole === $role) {
+                return $next($request);
+            }
         }
-        return redirect('/'); // Redirect jika tidak sesuai role
+        
+        return redirect('/')->with('error', 'Unauthorized access');
     }
 }

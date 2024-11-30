@@ -26,7 +26,10 @@ class NotificationController extends Controller
 
 
         // Ambil semua data notification
-        $notifications = Notification::where('id_division', $division->id)->get();
+        $notifications = Notification::where('id_division', $division->id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
 
         // Kembalikan data sebagai JSON
         return response()->json([

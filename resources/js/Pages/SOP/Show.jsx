@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import UserLayout from '@/Layouts/UserLayout';
 
-export default function Form({ sop = [], division = [] }) {
+export default function Form({ sop = [], supportedFile = [], division = [] }) {
+  console.log(supportedFile);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -166,6 +167,19 @@ export default function Form({ sop = [], division = [] }) {
                 Tidak ada data SOP yang tersedia.
               </div>
             )}
+          </div>
+          <div>
+            {supportedFile.length > 0 ? (
+              supportedFile.map((item) => (
+                <div key={item.id} className="space-y-6">
+                  <h1>{item.name}</h1>
+                </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-gray-500">
+                    Tidak ada data tambahan
+                  </div>
+          )}
           </div>
         </div>
       </div>

@@ -1,178 +1,318 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useForm } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
+import Swal from 'sweetalert2';
 
-export default function Edit({ sop, division }) {
-  // Inisialisasi data awal dari SOP yang ada (jika ada)
-  console.log(sop);
-
-  // State untuk file pendukung dengan validasi tambahan
-  const [supportingFiles, setSupportingFiles] = useState([
-    { id: Date.now(), category: '', file: null }
-  ]);
-
-  // Gunakan useForm hook dari Inertia untuk manajemen form
-  const { data, setData, post, processing, errors, reset } = useForm({
+export default function EditSopForm({ sop, division, existingSupportingFiles }) {
+  const { data, setData, processing, errors, reset } = useForm({
     title: sop.title || '',
     description: sop.description || '',
     flowchart_file: null,
     sop_file: null,
-    divisions: sop.related_division?.map(div => div.id) || [],
-    supporting_files: []
+    supporting_files: [],
+    divisions: sop.related_division ? sop.related_division.map(div => div.id) : [],
+    id_division: sop.id_division || '',
   });
 
-  const handleMainFileChange = (e, fileType) => {
+  const [supportingFileInputs, setSupportingFileInputs] = useState([
+    { id: 0, name: '', file: null, existingId: null, existingPath: null }
+  ]);
+
+  const [removedSupportingFiles, setRemovedSupportingFiles] = useState([]);
+
+  useEffect(() => {
+    // Populate existing supporting files
+    if (existingSupportingFiles && existingSupportingFiles.length > 0) {
+      const existingFiles = existingSupportingFiles.map((file, index) => ({
+        id: index,
+        name: file.name,
+        existingId: file.id,
+        existingPath: file.file_path,
+        file: null
+      }));
+      setSupportingFileInputs(existingFiles);
+    }
+  }, [existingSupportingFiles]);
+
+  const handleFileChange = (e, fileType) => {
     const file = e.target.files[0];
-    setData(fileType, file);
+    if (file) {
+      setData(fileType, file);
+    }
   };
 
-  // Handler untuk perubahan file pendukung
-  const handleSupportingFileChange = (index, field, value) => {
-    const updatedFiles = [...supportingFiles];
-    updatedFiles[index][field] = field === 'file' ? value.target.files[0] : value;
-    setSupportingFiles(updatedFiles);
+  const handleSupportingFileChange = (e, index) => {
+    const newSupportingFiles = [...supportingFileInputs];
+    const file = e.target.files[0];
+    if (file) {
+      newSupportingFiles[index] = { 
+        ...newSupportingFiles[index], 
+        file 
+      };
+      setSupportingFileInputs(newSupportingFiles);
+    }
   };
 
-  // Tambah input file pendukung baru
-  const addSupportingFileInput = () => {
-    setSupportingFiles([
-      ...supportingFiles, 
-      { id: Date.now(), category: '', file: null }
+  const removeSupportingFileInput = (indexToRemove) => {
+    const fileToRemove = supportingFileInputs[indexToRemove];
+    
+    // If it's an existing file, add to removed files list
+    if (fileToRemove.existingId) {
+      setRemovedSupportingFiles([
+        ...removedSupportingFiles, 
+        fileToRemove.existingId
+      ]);
+    }
+
+    // Remove the input
+    setSupportingFileInputs(
+      supportingFileInputs.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+  const handleSupportingNameChange = (e, index) => {
+    const newSupportingFiles = [...supportingFileInputs];
+    newSupportingFiles[index].name = e.target.value;
+    setSupportingFileInputs(newSupportingFiles);
+  };
+
+  const handleAddSupportingFileInput = () => {
+    setSupportingFileInputs([
+      ...supportingFileInputs, 
+      { 
+        id: supportingFileInputs.length, 
+        name: '', 
+        file: null 
+      }
     ]);
   };
 
-  // Hapus input file pendukung
-  const removeSupportingFileInput = (indexToRemove) => {
-    setSupportingFiles(supportingFiles.filter((_, index) => index !== indexToRemove));
-  };
-
-  // Handler untuk perubahan divisi
   const handleDivisionChange = (divisionId) => {
-    setData('divisions', prevDivisions => {
-      const currentDivisions = prevDivisions || [];
-      return currentDivisions.includes(divisionId)
-        ? currentDivisions.filter(id => id !== divisionId)
-        : [...currentDivisions, divisionId];
-    });
+    const currentDivisions = Array.isArray(data.divisions) ? [...data.divisions] : [];
+    const newDivisions = currentDivisions.includes(divisionId)
+      ? currentDivisions.filter(id => id !== divisionId)
+      : [...currentDivisions, divisionId];
+    setData('divisions', newDivisions);
   };
 
-  // Submit handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // Confirmation before submission
+    const confirmSubmit = await Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: 'Periksa kembali data SOP yang akan diubah',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, Ubah!',
+      cancelButtonText: 'Batal'
+    });
+
+    if (!confirmSubmit.isConfirmed) return;
+
     const formData = new FormData();
+    formData.append('_method', 'PUT'); // For Laravel's method spoofing
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('id_division', data.id_division);
+    
+    // Append files if changed
+    if (data.flowchart_file) {
+      formData.append('flowchart_file', data.flowchart_file);
+    }
+    if (data.sop_file) {
+      formData.append('sop_file', data.sop_file);
+    }
 
-    // Tambahkan data utama
-    Object.keys(data).forEach(key => {
-      if (key === 'divisions') {
-        // Tambahkan divisi
-        data[key].forEach(divisionId => {
-          formData.append('divisions[]', divisionId);
-        });
-      } else if (data[key] && key !== 'supporting_files') {
-        formData.append(key, data[key]);
+    // Append divisions
+    data.divisions.forEach((division) => {
+      formData.append('divisions[]', division);
+    });
+
+    // Append removed supporting files
+    removedSupportingFiles.forEach((fileId) => {
+      formData.append('removed_supporting_files[]', fileId);
+    });
+
+    // Append new and existing supporting files
+    supportingFileInputs.forEach((file, index) => {
+      formData.append(`supporting_files[${index}][name]`, file.name);
+      
+      // If it's a new file or a replacement for existing file
+      if (file.file) {
+        formData.append(`supporting_files[${index}][file]`, file.file);
+      }
+      
+      // If it's an existing file that hasn't been replaced
+      if (file.existingId) {
+        formData.append(`supporting_files[${index}][existing_id]`, file.existingId);
       }
     });
 
-    // Tambahkan file pendukung
-    supportingFiles.forEach((fileData, index) => {
-      if (fileData.file && fileData.category) {
-        formData.append(`supporting_files[${index}][category]`, fileData.category);
-        formData.append(`supporting_files[${index}][file]`, fileData.file);
-      }
-    });
+    try {
+      const response = await axios.post(
+        route('sop.update', { sop: sop.id }), 
+        formData, 
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
-    // Kirim form data
-    post('/documents', { 
-      data: formData, 
-      forceFormData: true 
-    });
+      // Success Sweet Alert
+      Swal.fire({
+        title: 'Berhasil!',
+        text: 'SOP berhasil diubah.',
+        icon: 'success',
+        confirmButtonText: 'Oke',
+        confirmButtonColor: '#3085d6'
+      });
+
+    } catch (error) {
+      // Error Sweet Alert
+      Swal.fire({
+        title: 'Gagal!',
+        text: error.response?.data?.message || 'Terjadi kesalahan saat mengubah SOP',
+        icon: 'error',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#d33'
+      });
+      console.error('Error updating SOP:', error);
+    }
   };
 
   return (
     <UserLayout>
-      <div className="container w-full">
-        <div className="bg-white p-8 rounded-lg shadow-md mx-auto">
-          <h1 className="text-2xl font-bold mb-6 text-center">Form Pengajuan SOP</h1>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Judul */}
-            <div>
-              <label className="block text-gray-700 mb-2">Judul</label>
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+          {/* Form Header */}
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+            <h1 className="text-3xl font-bold text-white text-center">
+              Edit Standar Operasional Prosedur
+            </h1>
+          </div>
+
+          {/* Form Content - Similar to create form, with modifications for edit */}
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            {/* Main Division Field */}
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">Divisi Utama</label>
+              <select
+                value={data.id_division}
+                onChange={(e) => setData('id_division', e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Pilih Divisi</option>
+                {division.map((div) => (
+                  <option key={div.id} value={div.id}>
+                    {div.name}
+                  </option>
+                ))}
+              </select>
+              {errors.id_division && <p className="text-red-500 text-sm mt-1">{errors.id_division}</p>}
+            </div>
+
+            {/* Title Field */}
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">Judul SOP</label>
               <input
                 type="text"
                 value={data.title}
                 onChange={(e) => setData('title', e.target.value)}
                 placeholder="Masukkan Judul Dokumen"
                 required
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
-            {/* Deskripsi */}
-            <div>
-              <label className="block text-gray-700 mb-2">Deskripsi</label>
+            {/* Description Field */}
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">Deskripsi</label>
               <textarea
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
                 value={data.description}
                 onChange={(e) => setData('description', e.target.value)}
                 placeholder="Masukkan Deskripsi Dokumen"
                 required
-                rows={4}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
-            {/* File Utama */}
+            {/* File Upload Fields */}
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-gray-700 mb-2">Upload Flowchart</label>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Upload Flowchart 
+                  {sop.flowchart && (
+                    <span className="ml-2 text-sm text-gray-500">
+                      (Saat ini: {sop.flowchart.split('/').pop()})
+                    </span>
+                  )}
+                </label>
                 <input
                   type="file"
                   accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={(e) => handleMainFileChange(e, 'flowchart_file')}
-                  required
-                  className="w-full px-3 py-2 border rounded-md"
+                  onChange={(e) => handleFileChange(e, 'flowchart_file')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {errors.flowchart_file && <p className="text-red-500 text-sm mt-1">{errors.flowchart_file}</p>}
               </div>
+
               <div>
-                <label className="block text-gray-700 mb-2">Upload SOP</label>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Upload SOP 
+                  {sop.sop && (
+                    <span className="ml-2 text-sm text-gray-500">
+                      (Saat ini: {sop.sop.split('/').pop()})
+                    </span>
+                  )}
+                </label>
                 <input
                   type="file"
                   accept=".pdf,.docx,.doc"
-                  onChange={(e) => handleMainFileChange(e, 'sop_file')}
-                  required
-                  className="w-full px-3 py-2 border rounded-md"
+                  onChange={(e) => handleFileChange(e, 'sop_file')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {errors.sop_file && <p className="text-red-500 text-sm mt-1">{errors.sop_file}</p>}
               </div>
             </div>
 
-            {/* File Pendukung */}
-            <div>
-              <label className="block text-gray-700 mb-2">File Pendukung (Opsional)</label>
-              {supportingFiles.map((file, index) => (
-                <div key={file.id} className="grid md:grid-cols-2 gap-4 mb-4">
+            {/* Supporting Files Section */}
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">File Pendukung (Opsional)</label>
+              {supportingFileInputs.map((input, index) => (
+                <div key={input.id} className="mb-4 grid md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                   <input
                     type="text"
-                    placeholder="Kategori File"
-                    value={file.category}
-                    onChange={(e) => handleSupportingFileChange(index, 'category', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
+                    value={input.name}
+                    onChange={(e) => handleSupportingNameChange(e, index)}
+                    placeholder="Nama File Pendukung"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="file"
-                      onChange={(e) => handleSupportingFileChange(index, 'file', e)}
-                      className="flex-grow px-3 py-2 border rounded-md"
-                    />
-                    {supportingFiles.length > 1 && (
+                  <div className='flex items-center space-x-2'> 
+                    <div className='flex-grow'>
+                      <input
+                        type="file"
+                        onChange={(e) => handleSupportingFileChange(e, index)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      {input.existingPath && (
+                        <span className="text-sm text-gray-500 mt-1 block">
+                          Saat ini: {input.existingPath.split('/').pop()}
+                        </span>
+                      )}
+                    </div>
+                    {supportingFileInputs.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeSupportingFileInput(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-full"
                       >
                         Hapus
                       </button>
@@ -182,46 +322,45 @@ export default function Edit({ sop, division }) {
               ))}
               <button
                 type="button"
-                onClick={addSupportingFileInput}
-                className="text-blue-600 hover:text-blue-800 underline"
+                onClick={handleAddSupportingFileInput}
+                className="text-blue-600 hover:text-blue-800 font-semibold mt-2 flex items-center"
               >
-                + Tambah File Pendukung
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                </svg>
+                Tambah File Pendukung
               </button>
             </div>
 
-            {/* Pilih Divisi */}
-            <div>
-              <label className="block text-gray-700 mb-2">Pilih Divisi</label>
-              <div className="grid md:grid-cols-2 gap-4">
+            {/* Division Selection */}
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">Divisi Terkait</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {division.map((div) => (
-                  <div key={div.id} className="flex items-center">
+                  <div key={div.id} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      id={`division-${div.id}`}
+                      id={`div-${div.id}`}
                       checked={data.divisions.includes(div.id)}
                       onChange={() => handleDivisionChange(div.id)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label 
-                      htmlFor={`division-${div.id}`} 
-                      className="text-gray-700"
-                    >
-                      {div.name}
-                    </label>
+                    <label htmlFor={`div-${div.id}`} className="text-gray-700">{div.name}</label>
                   </div>
                 ))}
               </div>
-              {errors.divisions && <p className="text-red-500 text-sm mt-1">{errors.divisions}</p>}
             </div>
 
-            {/* Tombol Submit */}
-            <button
-              type="submit"
-              disabled={processing}
-              className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              {processing ? 'Mengirim...' : 'Kirim Dokumen'}
-            </button>
+            {/* Submit Button */}
+            <div className="mt-6">
+              <button
+                type="submit"
+                className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={processing}
+              >
+                {processing ? 'Mengubah...' : 'Simpan Perubahan SOP'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

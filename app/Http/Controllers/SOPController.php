@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Models\Division;
 use App\Models\FilesExtended;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
 
 use Illuminate\Support\Facades\Log; 
 
@@ -56,6 +59,7 @@ class SOPController extends Controller
      */
     public function store(Request $request)
     {
+        //dd($request->all());
         // Validasi input
         $request->validate([
             'id_division' => 'required|exists:divisions,id',
@@ -115,7 +119,7 @@ class SOPController extends Controller
                     $filePath = 'storage/extended/' . $fileName;
                     
                     FilesExtended::create([
-                        'name' => $file->getClientOriginalName(),
+                        'name' => $supportingFile['name'],
                         'file_path' => $filePath,
                         'id_sop' => $sop->id,
                     ]);
@@ -131,6 +135,7 @@ class SOPController extends Controller
                 if ($division) {
                     Notification::create([
                         'id_division' => $division->id,
+                        'id_sop' => $sop->id,
                         'message' => 'Pengajuan SOP dari divisi ' . $division->name,
                         'status' => 'unread',
                     ]);
@@ -168,10 +173,15 @@ class SOPController extends Controller
                 $item->related_divisions = $relatedDivisions;
                 return $item;
             });
+            $supportedFile = FilesExtended::where('id_sop', $id)->get();
+
+            // dd($supportedFile);
+            
 
         return Inertia::render('SOP/Show', [
             'sop' => $sop,
             'division' => $division,
+            'supportedFile' => $supportedFile
         ]);
     } catch (\Exception $e) {
         return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
@@ -201,10 +211,15 @@ class SOPController extends Controller
         $sop->related_division = $relatedDivision;
     
         $division = Division::all();
+        $existingSupportingFiles = FilesExtended::where('id_sop', $id)->get();
+
+
+        
         
         return Inertia::render('SOP/Edit', [
             'sop' => $sop,
             'division' => $division,
+            'existingSupportingFiles'=>$existingSupportingFiles
         ]);
     }
 
@@ -215,10 +230,133 @@ class SOPController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-        //
+    public function update(Request $request, $sopId)
+{
+    // Find the existing SOP
+    $sop = SOP::findOrFail($sopId);
+
+    // Validate input
+    $request->validate([
+        'id_division' => 'required|exists:divisions,id',
+        'title' => 'required|string|max:255',
+        'description' => 'required|string|max:1000',
+        'flowchart_file' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+        'sop_file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        'divisions' => 'nullable|array',
+        'divisions.*' => 'exists:divisions,id',
+        'supporting_files' => 'nullable|array',
+        'supporting_files.*.file' => 'nullable|file|max:2048',
+        'supporting_files.*.name' => 'nullable|string',
+        'supporting_files.*.existing_id' => 'nullable|exists:files_extended,id',
+        'removed_supporting_files' => 'nullable|array',
+        'removed_supporting_files.*' => 'exists:files_extended,id',
+    ]);
+
+    // Proses hapus sop lama
+    $sopPath = $sop->sop;
+    if ($request->hasFile('sop_file')) {
+        // Menghapus file yang lama jika ada
+        if ($sopPath && Storage::exists(str_replace('storage/', 'public/', $sopPath))) {
+            Storage::delete(str_replace('storage/', 'public/', $sopPath));
+        }
+
+        $file = $request->file('sop_file');
+        $fileName = time() . '_sop_' . $file->getClientOriginalName();
+        $sopPath = $file->storeAs('public/sop', $fileName);
+        $sopPath = 'storage/sop/' . $fileName;
     }
+
+    // proses update file flowchart
+    $flowchartPath = $sop->flowchart;
+    if ($request->hasFile('flowchart_file')) {
+        // Delete wanita yang lama atau bisa mengganti dengan yang baru
+        if ($flowchartPath && Storage::exists(str_replace('storage/', 'public', $flowchartPath))) {
+            Storage::delete(str_replace('storage/', 'public/', $flowchartPath));
+        }
+
+        $file = $request->file('flowchart_file');
+        $fileName = time() . '_flowchart_' . $file->getClientOriginalName();
+        $flowchartPath = $file->storeAs('public/flowchart', $fileName);
+        $flowchartPath = 'storage/flowchart/' . $fileName;
+    }
+
+    // Update SOP main record
+    $sop->update([
+        'id_division' => $request->input('id_division'),
+        'title' => $request->input('title'),
+        'description' => $request->input('description'),
+        'sop' => $sopPath,
+        'flowchart' => $flowchartPath,
+        'related_division' => $request->input('divisions') ? json_encode($request->input('divisions')) : null,
+    ]);
+
+    // Handle removed supporting files
+    if ($request->has('removed_supporting_files')) {
+        $removedFiles = $request->input('removed_supporting_files');
+        foreach ($removedFiles as $fileId) {
+            $extendedFile = FilesExtended::find($fileId);
+            if ($extendedFile) {
+                // Delete file from storage
+                if (Storage::exists(str_replace('storage/', 'public/', $extendedFile->file_path))) {
+                    Storage::delete(str_replace('storage/', 'public/', $extendedFile->file_path));
+                }
+                // Delete database record
+                $extendedFile->delete();
+            }
+        }
+    }
+
+    // Process supporting files
+    if ($request->has('supporting_files')) {
+        foreach ($request->supporting_files as $supportingFile) {
+            // If it's a new file
+            if (isset($supportingFile['file'])) {
+                $file = $supportingFile['file'];
+                $fileName = time() . '_' . $supportingFile['name'] . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('public/lainnya', $fileName);
+                $filePath = 'storage/extended/' . $fileName;
+                
+                FilesExtended::create([
+                    'name' => $supportingFile['name'],
+                    'file_path' => $filePath,
+                    'id_sop' => $sop->id,
+                ]);
+            } 
+            // If it's an existing file with potential name update
+            elseif (isset($supportingFile['existing_id'])) {
+                $existingFile = FilesExtended::find($supportingFile['existing_id']);
+                if ($existingFile) {
+                    $existingFile->update([
+                        'name' => $supportingFile['name']
+                    ]);
+                }
+            }
+        }
+    }
+
+    // Update related divisions notifications
+    // First, remove existing notifications
+    Notification::where('id_sop', $sop->id)->delete();
+
+    // Create new notifications for related divisions
+    $relatedDivisions = $request->input('divisions');
+    if (is_array($relatedDivisions)) {
+        foreach ($relatedDivisions as $divisionId) {
+            $division = Division::find($divisionId);
+            if ($division) {
+                Notification::create([
+                    'id_division' => $division->id,
+                    'id_sop' => $sop->id,
+                    'message' => 'SOP diperbarui dari divisi ' . $division->name,
+                    'status' => 'unread',
+                ]);
+            }
+        }
+    }
+
+    // Redirect with success message
+    return redirect()->route('divisi.index')->with('success', 'SOP berhasil diperbarui dengan file pendukung.');
+}
 
     /**
      * Remove the specified resource from storage.

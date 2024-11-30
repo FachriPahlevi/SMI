@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Add from '@/Components/User/Add';
+import Edit from '@/Components/User/Edit';
 import UserLayout from '@/Layouts/UserLayout';
 import { 
   FaPlus, 
@@ -9,12 +11,25 @@ import {
   FaEllipsisV 
 } from "react-icons/fa";
 
-export default function User({ user }) {
+export default function User({ user, divisions, positions }) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null)
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const itemsPerPage = 10;
+
+  const handleAddUser = () => setIsAddModalOpen(true);
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const closeAddModal = () => setIsAddModalOpen(false);
+  const closeEditModal = () => setIsEditModalOpen(false);
 
   // Filter and paginate users
   const filteredUsers = user.filter((u) => 
@@ -46,11 +61,13 @@ export default function User({ user }) {
           <div className="bg-white shadow-md rounded-lg p-4 mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
               {/* Add User Button */}
-              <button 
+              <button
                 className="w-full sm:w-auto flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                onClick={() => handleAddUser(positions, divisions)}
               >
                 <FaPlus className="mr-2" /> Tambah User
               </button>
+
 
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
@@ -91,6 +108,7 @@ export default function User({ user }) {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">NIK</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Role</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Posisi</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Divisi</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Terakhir Diubah</th>
@@ -105,6 +123,9 @@ export default function User({ user }) {
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 hidden sm:table-cell">
                         {u.nik}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-600 hidden sm:table-cell">
+                        {u.role}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 hidden md:table-cell">
                         {u.position.name}
@@ -130,11 +151,13 @@ export default function User({ user }) {
 
                           {openDropdownId === u.id && (
                             <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-10">
-                              <button
+                            <button
                                 className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
+                                onClick={() => handleEditUser(u)} // Pass user to handleEditUser
                               >
                                 <FaEdit className="mr-2" /> Edit
                               </button>
+
                               <button 
                                 className="flex items-center w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
                               >
@@ -182,6 +205,15 @@ export default function User({ user }) {
           </div>
         </div>
       </div>
+      <Add isOpen={isAddModalOpen} onClose={closeAddModal} position={positions} division={divisions} onSubmit={() => { /* Tambah User Logic */ }} />
+      <Edit 
+        isOpen={isEditModalOpen} 
+        onClose={closeEditModal} 
+        user={selectedUser} 
+        position={positions}   // Pass positions to Edit
+        division={divisions}   // Pass divisions to Edit
+        onSubmit={() => { /* Edit User Logic */ }} 
+      />
     </UserLayout>
   );
 }

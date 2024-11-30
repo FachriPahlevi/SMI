@@ -24,6 +24,7 @@ class User extends Authenticatable
         'nik',
         'password',
         'role',
+        'id_position'
     ];
 
     /**

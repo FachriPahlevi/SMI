@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Head } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import { 
   FaFolder, 
@@ -25,6 +26,7 @@ export default function Division({ division }) {
 
   return (
     <UserLayout>
+      <Head title="Divisi" />
       <div className="bg-gray-50 min-h-screen p-4 sm:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}

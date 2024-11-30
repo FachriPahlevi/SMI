@@ -14,7 +14,7 @@ class Position extends Model
     protected $guarded = [];
 
     public function division(){
-        return $this->belongsTo(Division::class, 'id_division', 'id');
+        return $this->belongsTo(Division::class, 'id_division');
     }
 
     public function user(){

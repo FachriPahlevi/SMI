@@ -16,35 +16,31 @@ class DivisionSeeder extends Seeder
      */
     public function run()
     {
-    $now = Carbon::now();
+        $now = Carbon::now();
 
-    DB::table('divisions')->insert([
-        [
-            'name' => "Direktorat Utama",
-            'created_at' => $now,
-            'updated_at' => $now,
-        ],
-        [
-            'name' => "Corporate Finance",
-            'created_at' => $now,
-            'updated_at' => $now,
-        ],
-        [
-            'name' => "Akuntansi & Pajak",
-            'created_at' => $now,
-            'updated_at' => $now,
-        ],
-        [
-            'name' => "Hukum Tata Kelola",
-            'created_at' => $now,
-            'updated_at' => $now,
-        ],
-        [
-            'name' => "Risiko dan Kepatuhan",
-            'created_at' => $now,
-            'updated_at' => $now,
-        ],
-    ]);
-}
+        $divisions = [
+            "BOD",
+            "Corporate Finance",
+            "Akuntansi & Pajak",
+            "Hukum",
+            "Risiko dan Kepatuhan",
+            "SDM",
+            "F&B",
+            "Multi Service",
+            "Transportasi",
+            "Facility Management",
+            "Asset Management",
+            "Realty",
+        ];
 
+        $data = array_map(function ($division) use ($now) {
+            return [
+                'name' => $division,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }, $divisions);
+
+        DB::table('divisions')->insert($data);
     }
+}

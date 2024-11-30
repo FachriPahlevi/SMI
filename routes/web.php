@@ -43,6 +43,8 @@ Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/edit-sop/{id}', [SOPController::class, 'edit'])->name('sop.edit');
     Route::post('/tambah-sops', [SOPController::class, 'store'])->name('sop.store');
+    Route::post('/tambah-user', [UserController::class, 'store'])->name('user.store');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('user.update');
     Route::post('/api/notifications/{id}/mark-as-read', [NotificationController::class, 'store']);
     Route::put('/sop/{sop}', [SOPController::class, 'update'])->name('sop.update');
     Route::delete('/sop/delete/{id}', [SOPController::class, 'destroy'])->name('sop.destroy');

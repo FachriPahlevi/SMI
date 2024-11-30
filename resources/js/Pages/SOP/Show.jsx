@@ -31,6 +31,7 @@ export default function Form({ sop = [], supportedFile = [], division = [] }) {
 
   return (
     <UserLayout>
+      <Head title="Detail Pengajuan" />
       <div className="container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Header */}
@@ -216,7 +217,7 @@ export default function Form({ sop = [], supportedFile = [], division = [] }) {
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline"
                               >
-                                Baca Flowchart (PDF)
+                                Open File (PDF)
                               </a>
                             </div>
                           ) : (
@@ -230,13 +231,13 @@ export default function Form({ sop = [], supportedFile = [], division = [] }) {
                               download
                               className="text-blue-600 hover:underline"
                             >
-                              Unduh Flowchart
+                              Unduh File
                             </a>
                           </div>
                         </div>
                       ) : (
                         <div className="bg-gray-50 p-3 rounded-md border border-gray-200 text-gray-500">
-                          Flowchart tidak tersedia
+                          File tidak tersedia
                         </div>
                       )}
                     </div>

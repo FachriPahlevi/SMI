@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Swal from 'sweetalert2';
 
@@ -102,7 +102,7 @@ export default function Form({ division }) {
         confirmButtonText: 'Oke',
         confirmButtonColor: '#3085d6'
       });
-
+      window.location.reload();
       // Reset form
       setData({
         title: '',
@@ -130,6 +130,7 @@ export default function Form({ division }) {
 
   return (
     <UserLayout>
+      <Head title="Pengajuan SOP" />
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           {/* Form Header */}

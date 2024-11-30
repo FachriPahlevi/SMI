@@ -1,8 +1,11 @@
 import MainLayout from "@/Layouts/MainLayout";
+import { Head } from "@inertiajs/react";
+
 
 export default function Panduan() {
     return (
         <MainLayout>
+            <Head title="Panduan" />
             <div className="mt-12">
                 {/* Title Section */}
                 <div className="title text-3xl font-bold flex justify-center mb-8">

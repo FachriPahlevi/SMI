@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Swal from 'sweetalert2';
 
 export default function EditSopForm({ sop, division, existingSupportingFiles }) {
+  console.log(sop);
   const { data, setData, processing, errors, reset } = useForm({
     title: sop.title || '',
+    status: sop.status || 'menunggu',
     description: sop.description || '',
     flowchart_file: null,
     sop_file: null,
@@ -118,6 +120,7 @@ export default function EditSopForm({ sop, division, existingSupportingFiles }) 
     formData.append('title', data.title);
     formData.append('description', data.description);
     formData.append('id_division', data.id_division);
+    formData.append('status', data.status);
     
     // Append files if changed
     if (data.flowchart_file) {
@@ -171,6 +174,7 @@ export default function EditSopForm({ sop, division, existingSupportingFiles }) 
         confirmButtonText: 'Oke',
         confirmButtonColor: '#3085d6'
       });
+      window.location.reload();
 
     } catch (error) {
       // Error Sweet Alert
@@ -187,6 +191,7 @@ export default function EditSopForm({ sop, division, existingSupportingFiles }) 
 
   return (
     <UserLayout>
+      <Head title="Edit SOP" />
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           {/* Form Header */}
@@ -198,6 +203,21 @@ export default function EditSopForm({ sop, division, existingSupportingFiles }) 
 
           {/* Form Content - Similar to create form, with modifications for edit */}
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
+           {/* Ubah Status Field */}
+           <div className="mb-4">
+            <label className="block text-gray-700 font-semibold mb-2">Status</label>
+            <select
+              value={data.status}
+              onChange={(e) => setData('status', e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="menunggu">Menunggu</option>
+              <option value="disetujui">Disetujui</option>
+              <option value="ditolak">Ditolak</option>  
+            </select>
+            {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
+          </div>
             {/* Main Division Field */}
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">Divisi Utama</label>
@@ -303,11 +323,32 @@ export default function EditSopForm({ sop, division, existingSupportingFiles }) 
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100"
                       />
                       {input.existingPath && (
-                        <span className="text-sm text-gray-500 mt-1 block">
+                        <span className="text-sm text-gray-500 mt-1 block max-w-32"
+                        style={{
+                          display: 'inline-block',
+                          maxWidth: '400px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
                           Saat ini: {input.existingPath.split('/').pop()}
                         </span>
                       )}
                     </div>
+
+                    {/* <span
+                      className="text-sm text-gray-500 mt-1 block max-w-32"
+                      style={{
+                        display: 'inline-block',
+                        maxWidth: '400px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      Saat ini: {input.existingPath.split('/').pop()}
+                    </span> */}
+
                     {supportingFileInputs.length > 1 && (
                       <button
                         type="button"

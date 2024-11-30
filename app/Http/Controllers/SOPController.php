@@ -120,7 +120,6 @@ class SOPController extends Controller
                     
                     FilesExtended::create([
                         'name' => $supportingFile['name'],
-                        'file_name' => $filename,
                         'file_path' => $filePath,
                         'id_sop' => $sop->id,
                     ]);
@@ -239,6 +238,7 @@ class SOPController extends Controller
     // Validate input
     $request->validate([
         'id_division' => 'required|exists:divisions,id',
+        'status' => 'required|string|in:menunggu,disetujui,ditolak',
         'title' => 'required|string|max:255',
         'description' => 'required|string|max:1000',
         'flowchart_file' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
@@ -285,6 +285,7 @@ class SOPController extends Controller
     $sop->update([
         'id_division' => $request->input('id_division'),
         'title' => $request->input('title'),
+        'status' => $request->input('status'),
         'description' => $request->input('description'),
         'sop' => $sopPath,
         'flowchart' => $flowchartPath,

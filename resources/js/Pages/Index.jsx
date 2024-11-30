@@ -42,7 +42,7 @@ export default function Index() {
 
   return (
     <MainLayout>
-      <Head title="Home" />
+      <Head title="Dashboard" />
       
       {/* Hero Section with Overlay and Centered Content */}
       <div 

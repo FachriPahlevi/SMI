@@ -11,6 +11,7 @@ import {
   FaTrash 
 } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { Head } from "@inertiajs/react";
 
 export default function SOP({ sop, division, auth }) {
 
@@ -57,21 +58,19 @@ export default function SOP({ sop, division, auth }) {
       }
     });
   };
-  
 
-
-  // Status color mapping
   const getStatusColor = (status) => {
     switch(status) {
-      case 'disetujui': return 'bg-green-100 text-green-800';
-      case 'ditolak': return 'bg-red-100 text-red-800';
-      case 'menunggu': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'disetujui': return { colorClass: 'bg-green-100 text-green-800', displayText: 'DISETUJUI' };
+      case 'ditolak': return { colorClass: 'bg-red-100 text-red-800', displayText: 'DITOLAK' };
+      case 'menunggu': return { colorClass: 'bg-yellow-100 text-yellow-800', displayText: 'MENUNGGU' };
+      default: return { colorClass: 'bg-gray-100 text-gray-800', displayText: 'UNKNOWN' };
     }
   };
 
   return (
     <UserLayout>
+      <Head title={`Daftar SOP ${division.name}`} />
       <div className="bg-gray-50 min-h-screen p-8">
         {/* Header */}
         <div className="max-w-7xl mx-auto">
@@ -149,9 +148,9 @@ export default function SOP({ sop, division, auth }) {
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">{item.user.name}</td>
                       <td className="px-4 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(item.status)}`}>
-                          {item.status}
-                        </span>
+                      <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(item.status).colorClass}`}>
+                        {getStatusColor(item.status).displayText}
+                      </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-500">
                         {new Date(item.updated_at).toLocaleDateString("id-ID", {

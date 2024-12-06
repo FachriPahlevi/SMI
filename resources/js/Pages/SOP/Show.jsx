@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import UserLayout from '@/Layouts/UserLayout';
+import { Head } from '@inertiajs/react';
 
 export default function Form({ sop = [], supportedFile = [], division = [] }) {
-  console.log(supportedFile);
+  console.log(sop);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 

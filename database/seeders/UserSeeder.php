@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
         $now = Carbon::now();
 
         // Daftar role yang bisa digunakan
-        $roles = ['superadmin', 'admin', 'user'];
+        $roles = ['superadmin', 'admin', 'user', 'guess'];
 
         // Membuat 50 user
         for ($i = 1; $i <= 50; $i++) {

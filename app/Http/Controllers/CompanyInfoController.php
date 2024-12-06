@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\CompanyInfo;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
-class IndexController extends Controller
+class CompanyInfoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,21 +14,9 @@ class IndexController extends Controller
      */
     public function index()
     {
-        // Fetch the latest company info
-        $companyInfo = CompanyInfo::first();
-
-        // Prepare the data
-        $preparedData = [
-            'about' => $companyInfo->about ?? 'Default about text if not available',
-            'vision' => $companyInfo->vision ?? 'Default vision text if not available',
-            'mission' => json_decode($companyInfo->mission) ?? ['Default mission text if not available'],
-            'products' => json_decode($companyInfo->products) ?? [],
-        ];
-
-        return Inertia::render('Index', [
-            'companyInfo' => $preparedData,
-        ]);
+        //
     }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -55,10 +41,10 @@ class IndexController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\CompanyInfo  $companyInfo
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(CompanyInfo $companyInfo)
     {
         //
     }
@@ -66,10 +52,10 @@ class IndexController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\CompanyInfo  $companyInfo
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(CompanyInfo $companyInfo)
     {
         //
     }
@@ -78,10 +64,10 @@ class IndexController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Models\CompanyInfo  $companyInfo
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, CompanyInfo $companyInfo)
     {
         //
     }
@@ -89,10 +75,10 @@ class IndexController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Models\CompanyInfo  $companyInfo
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(CompanyInfo $companyInfo)
     {
         //
     }

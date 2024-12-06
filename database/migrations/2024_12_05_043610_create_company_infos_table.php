@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('company_infos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_division')->constrained('divisions')->ondelete('cascade');
-            $table->foreignId('id_sop')->constrained('sop')->ondelete('cascade');
-            $table->string('message');
-            $table->enum('status', ['read', 'unread']);
+            $table->text('about')->nullable();
+            $table->text('vision')->nullable();
+            $table->text('mission')->nullable();
+            $table->json('products')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('company_infos');
     }
 };

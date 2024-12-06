@@ -10,10 +10,7 @@ use App\Models\Division;
 use App\Models\FilesExtended;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-
-
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Auth; 
 
 class SOPController extends Controller
 {
@@ -24,6 +21,11 @@ class SOPController extends Controller
      */
     public function index(Request $request, $id)
     {
+        $authUser = Auth::user();
+        $user = User::with('position', 'position.division')
+        ->where('id', $authUser->id
+        )->first();
+
         $sop = SOP::where('id_division',$id)
         ->with('user', 'division')
         ->get();
@@ -45,9 +47,14 @@ class SOPController extends Controller
     public function create()
     {
         $division = Division::all();
-
+        $authUser = Auth::user();
+        $user = User::with('position', 'position.division')
+        ->where('id', $authUser->id
+        )->first();
+        
         return Inertia::render('SOP/Form', [
-            'division'=>$division
+            'division'=>$division,
+            'user' => $user
         ]);
     }
 
@@ -308,10 +315,10 @@ class SOPController extends Controller
         }
     }
 
-    // Process supporting files
+    // proses untuk file tambahan
     if ($request->has('supporting_files')) {
         foreach ($request->supporting_files as $supportingFile) {
-            // If it's a new file
+            // handle untuk file baru
             if (isset($supportingFile['file'])) {
                 $file = $supportingFile['file'];
                 $fileName = time() . '_' . $supportingFile['name'] . '_' . $file->getClientOriginalName();
@@ -324,7 +331,7 @@ class SOPController extends Controller
                     'id_sop' => $sop->id,
                 ]);
             } 
-            // If it's an existing file with potential name update
+            // handle untuk nama yang sama
             elseif (isset($supportingFile['existing_id'])) {
                 $existingFile = FilesExtended::find($supportingFile['existing_id']);
                 if ($existingFile) {
